@@ -1,3 +1,4 @@
+/* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /*
  * Copyright (c) 2005,2006 INRIA
  *
@@ -17,32 +18,49 @@
  * Author: Mathieu Lacage <mathieu.lacage@sophia.inria.fr>
  */
 
-#include "net-device.h"
-
+#include "ns3/object.h"
 #include "ns3/log.h"
+#include "ns3/uinteger.h"
+#include "net-device.h"
+#include <iostream>
 
-namespace ns3
+NS_LOG_COMPONENT_DEFINE ("NetDevice");
+
+namespace ns3 {
+
+NS_OBJECT_ENSURE_REGISTERED (NetDevice);
+
+TypeId NetDevice::GetTypeId (void)
 {
-
-NS_LOG_COMPONENT_DEFINE("NetDevice");
-
-NS_OBJECT_ENSURE_REGISTERED(NetDevice);
-
-TypeId
-NetDevice::GetTypeId()
-{
-    static TypeId tid = TypeId("ns3::NetDevice").SetParent<Object>().SetGroupName("Network");
-    return tid;
+  static TypeId tid = TypeId ("ns3::NetDevice")
+    .SetParent<Object> ()
+  ;
+  return tid;
 }
 
-NetDevice::~NetDevice()
+NetDevice::~NetDevice ()
 {
-    NS_LOG_FUNCTION(this);
+  NS_LOG_FUNCTION_NOARGS ();
+}
+
+uint32_t NetDevice::GetUsedBuffer(uint32_t port, uint32_t qIndex)
+{
+	//std::cout<<"WARNING: shouldn't reach here --- net-device.cc\n";
+	return 0;
+}
+
+bool NetDevice::IsQbb(void) const {
+	return false;
 }
 
 bool NetDevice::SwitchSend (uint32_t qIndex, Ptr<Packet> packet, CustomHeader &ch){
-    printf("NetDevice::SwitchSend not implemented\n");
-    return false;
+	printf("NetDevice::SwitchSend not implemented\n");
+	return false;
+}
+
+bool NetDevice::SwitchSend (uint32_t qIndex, Ptr<Packet> packet, MyCustomHeader &ch){
+	printf("NetDevice::SwitchSend not implemented\n");
+	return false;
 }
 
 } // namespace ns3
