@@ -5,7 +5,10 @@
 #include <ns3/rdma-queue-pair.h>
 #include <ns3/node.h>
 #include <ns3/custom-header.h>
+#include <ns3/custom-header-niux.h>
 #include "qbb-net-device.h"
+#include "enc-header.h"
+#include "enc-net-device.h"
 #include <unordered_map>
 #include "pint.h"
 
@@ -58,11 +61,11 @@ public:
     uint32_t GetNicIdxOfRxQp(Ptr<RdmaRxQueuePair> q); // get the NIC index of the rxQp
     void DeleteRxQp(uint32_t dip, uint16_t pg, uint16_t dport);
 
-    int ReceiveUdp(Ptr<Packet> p, CustomHeader &ch);
-    int ReceiveTcp(Ptr<Packet> p, CustomHeader &ch);
+    int ReceiveUdp(Ptr<Packet> p, MyCustomHeader &ch);
+    int ReceiveTcp(Ptr<Packet> p, MyCustomHeader &ch);
     int ReceiveCnp(Ptr<Packet> p, CustomHeader &ch);
-    int ReceiveAck(Ptr<Packet> p, CustomHeader &ch); // handle both ACK and NACK
-    int Receive(Ptr<Packet> p, CustomHeader &ch); // callback function that the QbbNetDevice should use when receive packets. Only NIC can call this function. And do not call this upon PFC
+    int ReceiveAck(Ptr<Packet> p, MyCustomHeader &ch); // handle both ACK and NACK
+    int Receive(Ptr<Packet> p, MyCustomHeader &ch); // callback function that the QbbNetDevice should use when receive packets. Only NIC can call this function. And do not call this upon PFC
 
     void CheckandSendQCN(Ptr<RdmaRxQueuePair> q);
     int ReceiverCheckSeq(uint32_t seq, Ptr<RdmaRxQueuePair> q, uint32_t size);
@@ -155,7 +158,7 @@ public:
     /*********************
      * MY- CC
      ********************/
-    void HandleAckMycc(Ptr<RdmaQueuePair> qp, Ptr<Packet> p, CustomHeader &ch);
+    void HandleAckMycc(Ptr<RdmaQueuePair> qp, Ptr<Packet> p, MyCustomHeader &ch);
 };
 
 } /* namespace ns3 */

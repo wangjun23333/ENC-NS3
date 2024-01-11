@@ -46,6 +46,7 @@
 #include "ns3/seq-ts-header.h"
 #include "ns3/pointer.h"
 #include "ns3/custom-header.h"
+#include "ns3/custom-header-niux.h"
 
 #include <iostream>
 
@@ -397,11 +398,11 @@ namespace ns3 {
         }
 
         m_macRxTrace(packet);
-        CustomHeader ch(CustomHeader::L2_Header | CustomHeader::L3_Header | CustomHeader::L4_Header);
+        MyCustomHeader ch(MyCustomHeader::L2_Header | MyCustomHeader::L3_Header | MyCustomHeader::L4_Header);
         ch.getInt = 1; // parse INT header
         packet->PeekHeader(ch);
         if (ch.l3Prot == 0xFE){ // PFC
-            if (!m_qbbEnabled) return;
+            /*if (!m_qbbEnabled) return;
             unsigned qIndex = ch.pfc.qIndex;
             if (ch.pfc.time > 0){
                 m_tracePfc(1);
@@ -409,12 +410,12 @@ namespace ns3 {
             }else{
                 m_tracePfc(0);
                 Resume(qIndex);
-            }
+            }*/
         }else { // non-PFC packets (data, ACK, NACK, CNP...)
-            if (m_node->GetNodeType() = 1){ // switch
+            if (m_node->GetNodeType() == 1){ // switch
                 packet->AddPacketTag(FlowIdTag(m_ifIndex));
                 m_node->SwitchReceiveFromDevice(this, packet, ch);
-            }else if(m_node->GetNodeType() = 2){ //出入口路由器
+            }else if(m_node->GetNodeType() == 2){ //出入口路由器
                 m_node->MatchSharedTableSendToRelatedSender(this, packet, ch);//生成共享链路表，和共享链路表匹配，调用sendtodev-switchsend
             }else { // NIC
                 // send to RdmaHw

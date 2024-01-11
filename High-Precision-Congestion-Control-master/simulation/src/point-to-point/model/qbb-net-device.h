@@ -32,6 +32,7 @@
 #include <vector>
 #include<map>
 #include <ns3/rdma.h>
+#include "ns3/custom-header-niux.h"
 
 namespace ns3 {
 
@@ -188,7 +189,7 @@ public:
     void RdmaEnqueueHighPrioQ(Ptr<Packet> p);
 
     // callback for processing packet in RDMA
-    typedef Callback<int, Ptr<Packet>, CustomHeader&> RdmaReceiveCb;
+    typedef Callback<int, Ptr<Packet>, MyCustomHeader&> RdmaReceiveCb;
     RdmaReceiveCb m_rdmaReceiveCb;
     // callback for link down
     typedef Callback<void, Ptr<QbbNetDevice> > RdmaLinkDownCb;

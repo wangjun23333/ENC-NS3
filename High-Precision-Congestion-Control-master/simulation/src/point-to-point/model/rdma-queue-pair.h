@@ -97,11 +97,6 @@ public:
         DataRate m_curRate;
         uint32_t m_incStage;
     }hpccPint;
-    struct{
-        uint32_t m_lastUpdateSeq;
-        DataRate m_curRate;
-        uint32_t m_incStage;
-    }hpccPint;
     /***********
      * methods
      **********/
