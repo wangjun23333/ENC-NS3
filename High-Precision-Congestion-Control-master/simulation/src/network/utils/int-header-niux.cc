@@ -2,6 +2,16 @@
 
 namespace ns3 {
 
+MyIntHeader::MyIntHeader() {
+	hinfo.buf = 0;
+	for (int i = 0; i < idNum; ++i)
+		iinfo[i].buf = 0;
+	for (int i = 0; i < maxNum; ++i) {
+		dinfo[i].buf = 0;
+		rinfo[i].buf = 0;
+	}
+}
+
 uint32_t MyIntHeader::GetStaticSize() {
 	return sizeof(hinfo)+sizeof(idInfo)+sizeof(dinfo)+sizeof(rinfo);
 }

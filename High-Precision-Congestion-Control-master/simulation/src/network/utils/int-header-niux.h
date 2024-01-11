@@ -20,7 +20,7 @@ public:
 	};
 
 	headerInfo() {
-		totalLength = 40;
+		totalLength = 9;
 		nodeNum = 0;
 		depthNum = 0;
 		ratioNum = 0;
@@ -89,7 +89,7 @@ public:
 
 	// headerInfo: 2 Bytes
 	headerInfo hinfo;
-	// idInfo: 2*3 = 6 Bytes
+	// idInfo: 2*1 = 2 Bytes
 	idInfo iinfo[idNum];
 	// depthInfo: Max 8*2 = 16 Bytes
 	depthInfo dinfo[maxNum];

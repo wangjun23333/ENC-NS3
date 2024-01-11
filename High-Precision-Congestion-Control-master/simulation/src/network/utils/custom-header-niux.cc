@@ -25,11 +25,11 @@
 
 namespace ns3 {
 
-NS_LOG_COMPONENT_DEFINE ("CustomHeader");
+NS_LOG_COMPONENT_DEFINE ("MyCustomHeader");
 
-NS_OBJECT_ENSURE_REGISTERED (CustomHeader);
+NS_OBJECT_ENSURE_REGISTERED (MyCustomHeader);
 
-CustomHeader::CustomHeader ()
+MyCustomHeader::MyCustomHeader ()
   : brief(1), headerType(L3_Header | L4_Header), 
 	getInt(1),
 	// IPv4 header
@@ -44,7 +44,7 @@ CustomHeader::CustomHeader ()
     m_headerSize(5*4)
 {
 }
-CustomHeader::CustomHeader (uint32_t _headerType)
+MyCustomHeader::MyCustomHeader (uint32_t _headerType)
   : brief(1), headerType(_headerType), 
 	getInt(1),
 	// IPv4 header
@@ -61,25 +61,25 @@ CustomHeader::CustomHeader (uint32_t _headerType)
 }
 
 TypeId 
-CustomHeader::GetTypeId (void)
+MyCustomHeader::GetTypeId (void)
 {
-  static TypeId tid = TypeId ("ns3::CustomHeader")
+  static TypeId tid = TypeId ("ns3::MyCustomHeader")
     .SetParent<Header> ()
     .SetGroupName ("Network")
-    .AddConstructor<CustomHeader> ()
+    .AddConstructor<MyCustomHeader> ()
   ;
   return tid;
 }
 TypeId 
-CustomHeader::GetInstanceTypeId (void) const
+MyCustomHeader::GetInstanceTypeId (void) const
 {
   //NS_LOG_FUNCTION (this);
   return GetTypeId ();
 }
 
-void CustomHeader::Print (std::ostream &os) const{
+void MyCustomHeader::Print (std::ostream &os) const{
 }
-uint32_t CustomHeader::GetSerializedSize (void) const{
+uint32_t MyCustomHeader::GetSerializedSize (void) const{
 	uint32_t len = 0;
 	if (headerType & L2_Header)
 		len += 14;
@@ -93,7 +93,7 @@ uint32_t CustomHeader::GetSerializedSize (void) const{
 	}
 	return len;
 }
-void CustomHeader::Serialize (Buffer::Iterator start) const{
+void MyCustomHeader::Serialize (Buffer::Iterator start) const{
   Buffer::Iterator i = start;
   
   // ppp
@@ -161,7 +161,7 @@ void CustomHeader::Serialize (Buffer::Iterator start) const{
 }
 
 uint32_t
-CustomHeader::Deserialize (Buffer::Iterator start)
+MyCustomHeader::Deserialize (Buffer::Iterator start)
 {
   Buffer::Iterator i = start;
 
@@ -283,6 +283,10 @@ CustomHeader::Deserialize (Buffer::Iterator start)
   }
 
   return l2Size + l3Size + l4Size;
+}
+
+uint8_t MyCustomHeader::GetIpv4EcnBits (void) const{
+	return m_tos & 0x3;
 }
 
 } // namespace ns3

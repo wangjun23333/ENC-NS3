@@ -18,8 +18,8 @@
  * Author: Mathieu Lacage <mathieu.lacage@sophia.inria.fr>
  */
 
-#ifndef CUSTOM_HEADER_H
-#define CUSTOM_HEADER_H
+#ifndef CUSTOM_HEADER_NIUX_H
+#define CUSTOM_HEADER_NIUX_H
 
 #include "ns3/header.h"
 #include "int-header-niux.h"//#include "ns3/int-header-niux.h"
@@ -30,14 +30,14 @@ namespace ns3 {
  *
  * \brief Custom packet header
  */
-class CustomHeader : public Header 
+class MyCustomHeader : public Header 
 {
 public:
   /**
    * \brief Construct a null custom header
    */
-  CustomHeader ();
-  CustomHeader (uint32_t _headerType);
+  MyCustomHeader ();
+  MyCustomHeader (uint32_t _headerType);
   /**
    * \enum EcnType
    * \brief ECN Type defined in \RFC{3168}
@@ -103,11 +103,13 @@ public:
       uint16_t sport;
       uint16_t dport;
       uint16_t flags; // including isOwn
-	uint16_t pg;
-	uint32_t seq;
+	    uint16_t pg;
+	    uint32_t seq;
       MyIntHeader ih;
     } ack;
   };
+
+  uint8_t GetIpv4EcnBits (void) const;
 
 };
 
