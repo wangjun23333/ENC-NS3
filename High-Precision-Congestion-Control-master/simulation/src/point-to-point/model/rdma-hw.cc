@@ -372,6 +372,7 @@ int RdmaHw::ReceiveTcp(Ptr<Packet> p, MyCustomHeader &ch){
         encH.SetPG(0);
         encH.SetSport(ch.tcp.dport);
         encH.SetDport(ch.tcp.sport);
+        encH.SetFin(ch.tcp.fin);//添加fin标志位
         encH.SetMyIntHeader(ch.tcp.ih);
 //        if (ecnbits)
 //            seqh.SetCnp();
@@ -612,8 +613,12 @@ void RdmaHw::RedistributeQp(){
 
 Ptr<Packet> RdmaHw::GetNxtPacket(Ptr<RdmaQueuePair> qp){
     uint32_t payload_size = qp->GetBytesLeft();
+    bool fin = false;
     if (m_mtu < payload_size)
         payload_size = m_mtu;
+    else //剩余数据量小于等于一个MTU
+        fin == true;
+    
     Ptr<Packet> p = Create<Packet> (payload_size);
     // add SeqTsHeader
     SeqTsHeader seqTs;
@@ -624,6 +629,7 @@ Ptr<Packet> RdmaHw::GetNxtPacket(Ptr<RdmaQueuePair> qp){
     TcpHeader tcpHeader;
     tcpHeader.SetDestinationPort (qp->dport);
     tcpHeader.SetSourcePort (qp->sport);
+    tcpHeader.SetFin(fin);//添加fin标志位
     p->AddHeader (tcpHeader);
     // add ipv4 header
     Ipv4Header ipHeader;

@@ -115,11 +115,11 @@ void EnquserverNode::SendToDev(Ptr<Packet>p, MyCustomHeader &ch){
 //生成共享链路表操作
 
 void EnquserverNode::GetShareTable(Ptr<const Packet>p, MyCustomHeader &ch){
-    if (ch.tcp.fin==1){//接收到fin标识位为1，说明该流结束，此时将该数据包中的{sip,dip,sport,dport}对应的共享链路表中的表项全部删除
+    if (ch.ack.fin==1){//接收到fin标识位为1，说明该流结束，此时将该数据包中的{sip,dip,sport,dport}对应的共享链路表中的表项全部删除
         for (const m_sharedTableEntry& p : m_sharedTable) {
             p.flowInfos.erase(std::remove_if(p.flowInfos.begin(), p.flowInfos.end(),
-                                            [ch.sip,ch.dip,ch.tcp.sport,ch.tcp.dport](const flowInfo& f) {
-                                                return f.sip == ch.dip && f.dip == ch.sip&& f.dport == ch.tcp.sport&& f.sport == ch.tcp.dport;
+                                            [ch.sip,ch.dip,ch.ack.sport,ch.ack.dport](const flowInfo& f) {
+                                                return f.sip == ch.dip && f.dip == ch.sip&& f.dport == ch.ack.sport&& f.sport == ch.ack.dport;
                                             }),
                               p.flowInfos.end());
             }
@@ -127,9 +127,9 @@ void EnquserverNode::GetShareTable(Ptr<const Packet>p, MyCustomHeader &ch){
     else{//获取接收到的ack包中的路由id和port信息，在共享链路表对应的表项中查找，若没有，则直接添加
         bool found = false;
            for (m_sharedTableEntry& p : m_sharedTable) {
-               if (p.rid == ch.ih.iinfo.id && p.port == ch.ih.iinfo.port) {
+               if (p.rid == ch.ack.ih.iinfo.id && p.port == ch.ack.ih.iinfo.port) {
                    found = true;
-                   p.flowInfos.push_back({ch.dip,ch.sip,ch.tcp.dport,ch.tcp.sport});//将该数据包的四元组信息添加到对应的表项中
+                   p.flowInfos.push_back({ch.dip,ch.sip,ch.ack.dport,ch.ack.sport});//将该数据包的四元组信息添加到对应的表项中
                    break; // 如果找到了，跳出循环
                }
            }
@@ -137,8 +137,8 @@ void EnquserverNode::GetShareTable(Ptr<const Packet>p, MyCustomHeader &ch){
            // 如果没找到，添加到向量中
            if (!found) {
                std::vector<flowInfo> info;
-               info.push_back({ch.dip,ch.sip,ch.tcp.dport,ch.tcp.sport}); //将四元组信息添加到Info中
-               m_sharedTable.push_back({ch.ih.iinfo.id,ch.ih.iinfo.port,info});
+               info.push_back({ch.dip,ch.sip,ch.ack.dport,ch.ack.sport}); //将四元组信息添加到Info中
+               m_sharedTable.push_back({ch.ack.ih.iinfo.id,ch.ack.ih.iinfo.port,info});
            }
     }
 }
@@ -149,16 +149,16 @@ void EnquserverNode::MatchSharedTableSendToRelatedSender(Ptr<NetDevice> device, 
     GetShareTable(packet, ch);
     
     std::vector<m_sharedTableEntry> matchedEntries;//根据从数据包获取的路由器二元组信息，和共享链路表比配，获取数据包中路由节点二元组对应的所有主机地址四元组
-    for (int i = 0; i < ch.tcp.ih.hinfo.depthNum; ++i) {
+    for (int i = 0; i < ch.ack.ih.hinfo.depthNum; ++i) {
         for (const auto& sharedEntry : m_sharedTable) {
-            if (ch.tcp.ih.dinfo[i].iinfo.id == sharedEntry.rid && ch.tcp.ih.dinfo[i].iinfo.port == sharedEntry.port) {
+            if (ch.ack.ih.dinfo[i].iinfo.id == sharedEntry.rid && ch.ack.ih.dinfo[i].iinfo.port == sharedEntry.port) {
                 matchedEntries.push_back(sharedEntry);
             }
         }
     }
-    for (int i = 0; i < ch.tcp.ih.hinfo.ratioNum; ++i) {
+    for (int i = 0; i < ch.ack.ih.hinfo.ratioNum; ++i) {
         for (const auto& sharedEntry : m_sharedTable) {
-            if (ch.tcp.ih.rinfo[i].iinfo.id == sharedEntry.rid && ch.tcp.ih.rinfo[i].iinfo.port == sharedEntry.port) {
+            if (ch.ack.ih.rinfo[i].iinfo.id == sharedEntry.rid && ch.ack.ih.rinfo[i].iinfo.port == sharedEntry.port) {
                 matchedEntries.push_back(sharedEntry);
             }
         }
@@ -192,7 +192,7 @@ void EnquserverNode::MatchSharedTableSendToRelatedSender(Ptr<NetDevice> device, 
         }
     }
     for (const auto& info : relatedSenderHeaderInfos) { //需要加判断，如果sip。。。。==原数据包中的sip。。。。，则直接转发
-        if (info.fInfo.sip == ch.dip && info.fInfo.dip == ch.sip && info.fInfo.sport == ch.tcp.dport && info.fInfo.dport == ch.tcp.sport) {
+        if (info.fInfo.sip == ch.dip && info.fInfo.dip == ch.sip && info.fInfo.sport == ch.ack.dport && info.fInfo.dport == ch.ack.sport) {
             SendToDev(packet,info.fInfo.sip); //直接转发
         }else{
             encHeader encH;
@@ -205,9 +205,9 @@ void EnquserverNode::MatchSharedTableSendToRelatedSender(Ptr<NetDevice> device, 
             MyIntHeader ih;
             for (const auto& pair : info.rIdAndPort) {
                 bool isFind = 0;
-                for (int i = 0; i < ch.tcp.ih.hinfo.depthNum; ++i){
-                    if (pair.first == ch.tcp.ih.dinfo[i].iinfo.id && pair.second == ch.tcp.ih.dinfo[i].iinfo.port) {
-                        ih.PushDepth(ch.tcp.ih.dinfo[i].iinfo.id,ch.tcp.ih.dinfo[i].iinfo.port,ch.tcp.ih.dinfo[i].depth,ch.tcp.ih.dinfo[i].ts,ch.tcp.ih.dinfo[i].maxRate);
+                for (int i = 0; i < ch.ack.ih.hinfo.depthNum; ++i){
+                    if (pair.first == ch.ack.ih.dinfo[i].iinfo.id && pair.second == ch.ack.ih.dinfo[i].iinfo.port) {
+                        ih.PushDepth(ch.ack.ih.dinfo[i].iinfo.id,ch.ack.ih.dinfo[i].iinfo.port,ch.ack.ih.dinfo[i].depth,ch.ack.ih.dinfo[i].ts,ch.ack.ih.dinfo[i].maxRate);
                         isFind = 1;
                         break;
                     }
@@ -215,9 +215,9 @@ void EnquserverNode::MatchSharedTableSendToRelatedSender(Ptr<NetDevice> device, 
                 if (isFind == 1) {
                     break;
                 }
-                for (int i = 0; i < ch.tcp.ih.hinfo.ratioNum; ++i){
-                    if (pair.first == ch.tcp.ih.rinfo[i].iinfo.id && pair.second == ch.tcp.ih.rinfo[i].iinfo.port) {
-                        ih.PushDepth(ch.tcp.ih.rinfo[i].iinfo.id,ch.tcp.ih.rinfo[i].iinfo.port,ch.tcp.ih.rinfo[i].ratio,ch.tcp.ih.rinfo[i].ts,ch.tcp.ih.rinfo[i].maxRate);
+                for (int i = 0; i < ch.ack.ih.hinfo.ratioNum; ++i){
+                    if (pair.first == ch.ack.ih.rinfo[i].iinfo.id && pair.second == ch.ack.ih.rinfo[i].iinfo.port) {
+                        ih.PushDepth(ch.ack.ih.rinfo[i].iinfo.id,ch.ack.ih.rinfo[i].iinfo.port,ch.ack.ih.rinfo[i].ratio,ch.ack.ih.rinfo[i].ts,ch.ack.ih.rinfo[i].maxRate);
                         break;
                     }
                 }
