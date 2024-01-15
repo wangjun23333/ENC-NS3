@@ -43,6 +43,11 @@ namespace ns3 {
 		ih = _ih;
 	}
 
+	void encHeader::SetFin(bool fin) {
+		uint16_t flag = 1?0:fin;
+		encHeader::SetFlags(flag);
+	}
+
 	uint16_t encHeader::GetSport() const{
 		return sport;
 	}
