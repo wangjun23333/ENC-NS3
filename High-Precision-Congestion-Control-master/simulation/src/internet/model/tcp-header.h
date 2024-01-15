@@ -165,6 +165,9 @@ public:
    */
   bool IsChecksumOk (void) const;
 
+  // add by niux
+  void SetFin (bool fin);
+
 private:
   uint16_t CalculateHeaderChecksum (uint16_t size) const;
   uint16_t m_sourcePort;
