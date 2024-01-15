@@ -383,4 +383,11 @@ Ptr<TcpOption> TcpHeader::GetOption (TcpOption::Kind kind) const
   return NULL;
 }
 
+// add by niux
+void TcpHeader::SetFin (bool fin)
+{
+  uint16_t flag = 1?0:fin;
+  TcpHeader::SetFlags(flag);
+}
+
 } // namespace ns3
