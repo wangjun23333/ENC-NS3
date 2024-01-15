@@ -372,7 +372,7 @@ int RdmaHw::ReceiveTcp(Ptr<Packet> p, MyCustomHeader &ch){
         encH.SetPG(0);
         encH.SetSport(ch.tcp.dport);
         encH.SetDport(ch.tcp.sport);
-        encH.SetFin(ch.tcp.fin);//添加fin标志位
+        encH.SetFin(ch.tcp.tcpFlags&0x01);//添加fin标志位
         encH.SetMyIntHeader(ch.tcp.ih);
 //        if (ecnbits)
 //            seqh.SetCnp();
