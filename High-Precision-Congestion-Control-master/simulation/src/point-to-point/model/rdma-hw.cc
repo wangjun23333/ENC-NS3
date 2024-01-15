@@ -255,7 +255,8 @@ void RdmaHw::AddQueuePair(uint64_t size, uint16_t pg, Ipv4Address sip, Ipv4Addre
         qp->tmly.m_curRate = m_bps;
     }else if (m_cc_mode == 10){
         qp->hpccPint.m_curRate = m_bps;
-    }
+    }else
+        qp.mycc.m_currentWinSize = win;
 
     // Notify Nic
     m_nic[nic_idx].dev->NewQp(qp);

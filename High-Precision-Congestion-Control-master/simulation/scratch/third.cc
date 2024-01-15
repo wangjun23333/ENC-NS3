@@ -36,6 +36,7 @@
 #include <ns3/rdma-driver.h>
 #include <ns3/switch-node.h>
 #include <ns3/sim-setting.h>
+#include <ns3/enquserver-node.h>
 
 using namespace ns3;
 using namespace std;
@@ -107,6 +108,7 @@ struct Interface{
 map<Ptr<Node>, map<Ptr<Node>, Interface> > nbr2if;
 // Mapping destination to next hop for each node: <node, <dest, <nexthop0, ...> > >
 map<Ptr<Node>, map<Ptr<Node>, vector<Ptr<Node> > > > nextHop;
+map<Ptr<Node>, map<Ptr<Node>, Ptr<Node> > > nextHopenc;//每个节点到目的地址的下一跳的节点<node, <dest, nexthop > >
 map<Ptr<Node>, map<Ptr<Node>, uint64_t> > pairDelay;
 map<Ptr<Node>, map<Ptr<Node>, uint64_t> > pairTxDelay;
 map<uint32_t, map<uint32_t, uint64_t> > pairBw;
@@ -255,7 +257,7 @@ void CalculateRoute(Ptr<Node> host){
 			}
 			// if 'now' is on the shortest path from 'next' to 'host'.
 			if (d + 1 == dis[next]){
-				nextHop[next][host].push_back(now);
+				nextHopenc[next][host] = now;
 			}
 		}
 	}
@@ -299,6 +301,31 @@ void SetRoutingEntries(){
 		}
 	}
 }
+void SetRoutingEntriesEnc(){
+	// For each node.
+	for (auto i = nextHopenc.begin(); i != nextHopenc.end(); i++){
+		Ptr<Node> node = i->first;
+		auto &table = i->second;
+		for (auto j = table.begin(); j != table.end(); j++){
+			// The destination node.
+			Ptr<Node> dst = j->first;
+			// The IP address of the dst.
+			Ipv4Address dstAddr = dst->GetObject<Ipv4>()->GetAddress(1, 0).GetLocal();
+			// The next hops towards the dst.
+			Ptr<Node> next = j->second;
+			uint32_t interface = nbr2if[node][next].idx;
+			if (node->GetNodeType() == 1){
+				DynamicCast<SwitchNode>(node)->AddTableEntry(dstAddr, interface);
+			}else if(node->GetNodeType() == 0){
+				node->GetObject<RdmaDriver>()->m_rdma->AddTableEntry(dstAddr, interface);
+			}else{
+				DynamicCast<EnquserverNode>(node)->AddTableEntry(dstAddr, interface);
+			}
+		}
+	}
+}
+
+
 
 // take down the link between a and b, and redo the routing
 void TakeDownLink(NodeContainer n, Ptr<Node> a, Ptr<Node> b){
@@ -318,8 +345,8 @@ void TakeDownLink(NodeContainer n, Ptr<Node> a, Ptr<Node> b){
 	DynamicCast<QbbNetDevice>(a->GetDevice(nbr2if[a][b].idx))->TakeDown();
 	DynamicCast<QbbNetDevice>(b->GetDevice(nbr2if[b][a].idx))->TakeDown();
 	// reset routing table
-	SetRoutingEntries();
-
+	// SetRoutingEntries();
+	SetRoutingEntriesEnc();
 	// redistribute qp on each host
 	for (uint32_t i = 0; i < n.GetN(); i++){
 		if (n.Get(i)->GetNodeType() == 0)
@@ -329,8 +356,10 @@ void TakeDownLink(NodeContainer n, Ptr<Node> a, Ptr<Node> b){
 
 uint64_t get_nic_rate(NodeContainer &n){
 	for (uint32_t i = 0; i < n.GetN(); i++)
-		if (n.Get(i)->GetNodeType() == 0)
+		if (n.Get(i)->GetNodeType() == 0){
 			return DynamicCast<QbbNetDevice>(n.Get(i)->GetDevice(1))->GetDataRate().GetBitRate();
+		}
+
 }
 
 int main(int argc, char *argv[])
@@ -693,8 +722,8 @@ int main(int argc, char *argv[])
 	topof.open(topology_file.c_str());
 	flowf.open(flow_file.c_str());
 	tracef.open(trace_file.c_str());
-	uint32_t node_num, switch_num, link_num, trace_num;
-	topof >> node_num >> switch_num >> link_num;
+	uint32_t node_num, switch_num, en_num,link_num, trace_num;
+	topof >> node_num >> switch_num >>en_num >>link_num;
 	flowf >> flow_num;
 	tracef >> trace_num;
 
@@ -707,13 +736,23 @@ int main(int argc, char *argv[])
 		topof >> sid;
 		node_type[sid] = 1;
 	}
+	for (uint32_t i = 0; i < en_num; i++)
+	{
+		uint32_t eid;
+		topof >> eid;
+		node_type[eid] = 2;
+	}	
 	for (uint32_t i = 0; i < node_num; i++){
 		if (node_type[i] == 0)
 			n.Add(CreateObject<Node>());
-		else{
+		else if(node_type[i] == 1){
 			Ptr<SwitchNode> sw = CreateObject<SwitchNode>();
 			n.Add(sw);
 			sw->SetAttribute("EcnEnabled", BooleanValue(enable_qcn));
+		}else{
+			Ptr<EnquserverNode> en = CreateObject<EnquserverNode>();
+			n.Add(en);
+			en->SetAttribute("EcnEnabled", BooleanValue(enable_qcn));
 		}
 	}
 
@@ -847,6 +886,35 @@ int main(int argc, char *argv[])
 			sw->m_mmu->ConfigBufferSize(buffer_size* 1024 * 1024);
 			sw->m_mmu->node_id = sw->GetId();
 		}
+		else if (n.Get(i)->GetNodeType() == 2)// is border router
+		{
+			Ptr<EnquserverNode> eqs = DynamicCast<EnquserverNode>(n.Get(i));
+			uint32_t shift = 3; // by default 1/8
+			for (uint32_t j = 1; j < eqs->GetNDevices(); j++){
+				Ptr<QbbNetDevice> dev = DynamicCast<QbbNetDevice>(eqs->GetDevice(j));
+				// set ecn
+				uint64_t rate = dev->GetDataRate().GetBitRate();
+				NS_ASSERT_MSG(rate2kmin.find(rate) != rate2kmin.end(), "must set kmin for each link speed");
+				NS_ASSERT_MSG(rate2kmax.find(rate) != rate2kmax.end(), "must set kmax for each link speed");
+				NS_ASSERT_MSG(rate2pmax.find(rate) != rate2pmax.end(), "must set pmax for each link speed");
+				eqs->m_mmu->ConfigEcn(j, rate2kmin[rate], rate2kmax[rate], rate2pmax[rate]);
+				// set pfc
+				uint64_t delay = DynamicCast<QbbChannel>(dev->GetChannel())->GetDelay().GetTimeStep();
+				uint32_t headroom = rate * delay / 8 / 1000000000 * 3;
+				eqs->m_mmu->ConfigHdrm(j, headroom);
+
+				// set pfc alpha, proportional to link bw
+				eqs->m_mmu->pfc_a_shift[j] = shift;
+				while (rate > nic_rate && eqs->m_mmu->pfc_a_shift[j] > 0){
+					eqs->m_mmu->pfc_a_shift[j]--;
+					rate /= 2;
+				}
+			}
+			eqs->m_mmu->ConfigNPort(eqs->GetNDevices()-1);
+			eqs->m_mmu->ConfigBufferSize(buffer_size* 1024 * 1024);
+			eqs->m_mmu->node_id = eqs->GetId();
+		}
+		
 	}
 
 	#if ENABLE_QP
@@ -902,7 +970,8 @@ int main(int argc, char *argv[])
 
 	// setup routing
 	CalculateRoutes(n);
-	SetRoutingEntries();
+	// SetRoutingEntries();
+	SetRoutingEntriesEnc();
 
 	//
 	// get BDP and delay
@@ -937,7 +1006,13 @@ int main(int argc, char *argv[])
 			Ptr<SwitchNode> sw = DynamicCast<SwitchNode>(n.Get(i));
 			sw->SetAttribute("CcMode", UintegerValue(cc_mode));
 			sw->SetAttribute("MaxRtt", UintegerValue(maxRtt));
+		}else if (n.Get(i)->GetNodeType() == 2)
+		{
+			Ptr<EnquserverNode> eqs = DynamicCast<EnquserverNode>(n.Get(i));
+			eqs->SetAttribute("CcMode", UintegerValue(cc_mode));
+			eqs->SetAttribute("MaxRtt", UintegerValue(maxRtt));
 		}
+		
 	}
 
 	//

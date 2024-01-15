@@ -1,5 +1,14 @@
 {
     "files.associations": {
-        "random": "cpp"
+        "random": "cpp",
+        "unordered_map": "cpp",
+        "map": "cpp",
+        "hash_map": "cpp",
+        "*.tcc": "cpp",
+        "deque": "cpp",
+        "list": "cpp",
+        "string": "cpp",
+        "vector": "cpp",
+        "iosfwd": "cpp"
     }
 }
