@@ -7,7 +7,8 @@
 #include "ns3/uinteger.h"
 #include "ns3/double.h"
 #include "switch-node.h"
-#include "enc-net-device.h"
+//#include "enc-net-device.h"
+#include "qbb-net-device.h"
 #include "ppp-header.h"
 #include "ns3/int-header-niux.h"
 //#include "../../network/utils/int-header-niux.h"
@@ -83,7 +84,7 @@ SwitchNode::SwitchNode(uint8_t _id){
 
 void SwitchNode::SetMaxRate(uint8_t _port, uint64_t _max_rate) {
 	max_rate[_port] = _max_rate;
-	Ptr<EncNetDevice> device = DynamicCast<EncNetDevice>(m_devices[_port]);
+	Ptr<QbbNetDevice> device = DynamicCast<QbbNetDevice>(m_devices[_port]);
 	device->SetDataRate(_max_rate);
 }
 
@@ -116,13 +117,13 @@ int SwitchNode::GetOutDev(Ptr<const Packet> p, MyCustomHeader &ch){
 }
 
 void SwitchNode::CheckAndSendPfc(uint32_t inDev, uint32_t qIndex){
-	Ptr<EncNetDevice> device = DynamicCast<EncNetDevice>(m_devices[inDev]);
+	Ptr<QbbNetDevice> device = DynamicCast<QbbNetDevice>(m_devices[inDev]);
 	if (m_mmu->CheckShouldPause(inDev, qIndex)){
 		m_mmu->SetPause(inDev, qIndex);
 	}
 }
 void SwitchNode::CheckAndSendResume(uint32_t inDev, uint32_t qIndex){
-	Ptr<EncNetDevice> device = DynamicCast<EncNetDevice>(m_devices[inDev]);
+	Ptr<QbbNetDevice> device = DynamicCast<QbbNetDevice>(m_devices[inDev]);
 	if (m_mmu->CheckShouldResume(inDev, qIndex)){
 		m_mmu->SetResume(inDev, qIndex);
 	}
@@ -207,7 +208,7 @@ void SwitchNode::SwitchNotifyDequeue(uint32_t ifIndex, uint32_t qIndex, Ptr<Pack
 	uint8_t* buf = p->GetBuffer();
 	if (buf[PppHeader::GetStaticSize() + 9] == 0x06) {
 		MyIntHeader *ih = (MyIntHeader*)&buf[PppHeader::GetStaticSize() + 20 + 20];
-		Ptr<EncNetDevice> dev = DynamicCast<EncNetDevice>(m_devices[ifIndex]);
+		Ptr<QbbNetDevice> dev = DynamicCast<QbbNetDevice>(m_devices[ifIndex]);
 
 		uint32_t ts = m_lastPktTs[ifIndex];
 		int push_rst;
