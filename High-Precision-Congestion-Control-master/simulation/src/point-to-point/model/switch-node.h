@@ -3,7 +3,7 @@
 
 #include <unordered_map>
 #include <ns3/node.h>
-#include "enc-net-device.h"
+#include "qbb-net-device.h"
 #include "switch-mmu.h"
 
 namespace ns3 {

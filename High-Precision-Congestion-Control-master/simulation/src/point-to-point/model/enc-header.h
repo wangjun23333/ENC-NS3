@@ -41,6 +41,7 @@ public:
   void SetSport(uint32_t _sport);
   void SetDport(uint32_t _dport);
   void SetMyIntHeader(const MyIntHeader &_ih);
+  void SetFin(bool fin);
 
 //Getters
   /**
