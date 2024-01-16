@@ -28,39 +28,38 @@
 
 namespace ns3 {
 
-    class TraceContainer;
+	class TraceContainer;
 
-    template <typename Item>
-    class BEgressQueue : public Queue<Item> {
-    public:
-        static TypeId GetTypeId(void);
-        static const unsigned fCnt = 128; //max number of queues, 128 for NICs
-        static const unsigned qCnt = 8; //max number of queues, 8 for switches
-        BEgressQueue();
-        virtual ~BEgressQueue();
-        bool Enqueue(Ptr<Packet> p, uint32_t qIndex);
-        Ptr<Packet> DequeueRR(bool paused[]);
-        uint32_t GetNBytes(uint32_t qIndex) const;
-        uint32_t GetNBytesTotal() const;
-        uint32_t GetLastQueue();
+	class BEgressQueue : public Queue {
+	public:
+		static TypeId GetTypeId(void);
+		static const unsigned fCnt = 128; //max number of queues, 128 for NICs
+		static const unsigned qCnt = 8; //max number of queues, 8 for switches
+		BEgressQueue();
+		virtual ~BEgressQueue();
+		bool Enqueue(Ptr<Packet> p, uint32_t qIndex);
+		Ptr<Packet> DequeueRR(bool paused[]);
+		uint32_t GetNBytes(uint32_t qIndex) const;
+		uint32_t GetNBytesTotal() const;
+		uint32_t GetLastQueue();
 
-        TracedCallback<Ptr<const Packet>, uint32_t> m_traceBeqEnqueue;
-        TracedCallback<Ptr<const Packet>, uint32_t> m_traceBeqDequeue;
+		TracedCallback<Ptr<const Packet>, uint32_t> m_traceBeqEnqueue;
+		TracedCallback<Ptr<const Packet>, uint32_t> m_traceBeqDequeue;
 
-    private:
-        bool DoEnqueue(Ptr<Packet> p, uint32_t qIndex);
-        Ptr<Packet> DoDequeueRR(bool paused[]);
-        //for compatibility
-        virtual bool DoEnqueue(Ptr<Packet> p);
-        virtual Ptr<Packet> DoDequeue(void);
-        virtual Ptr<const Packet> DoPeek(void) const;
-        double m_maxBytes; //total bytes limit
-        uint32_t m_bytesInQueue[fCnt];
-        uint32_t m_bytesInQueueTotal;
-        uint32_t m_rrlast;
-        uint32_t m_qlast;
-        std::vector<Ptr<Queue<Item> > > m_queues; // uc queues
-    };
+	private:
+		bool DoEnqueue(Ptr<Packet> p, uint32_t qIndex);
+		Ptr<Packet> DoDequeueRR(bool paused[]);
+		//for compatibility
+		virtual bool DoEnqueue(Ptr<Packet> p);
+		virtual Ptr<Packet> DoDequeue(void);
+		virtual Ptr<const Packet> DoPeek(void) const;
+		double m_maxBytes; //total bytes limit
+		uint32_t m_bytesInQueue[fCnt];
+		uint32_t m_bytesInQueueTotal;
+		uint32_t m_rrlast;
+		uint32_t m_qlast;
+		std::vector<Ptr<Queue> > m_queues; // uc queues
+	};
 
 } // namespace ns3
 
