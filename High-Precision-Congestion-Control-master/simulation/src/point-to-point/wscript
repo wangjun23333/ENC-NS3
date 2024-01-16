@@ -22,9 +22,7 @@ def build(bld):
 		'model/switch-node.cc',
 		'model/switch-mmu.cc',
 		'model/pint.cc',
-        'model/enc-net-device.cc',
         'model/enc-header.cc',
-        'model/enc-channel.cc',
         'model/enquserver-node.cc',
         ]
 
@@ -56,9 +54,7 @@ def build(bld):
 		'model/switch-mmu.h',
 		'model/pint.h',
 		'helper/sim-setting.h',
-        'model/enc-net-device.h',
         'model/enc-header.h',
-        'model/enc-channel.h',
         'model/enquserver-node.h',
         ]
 
