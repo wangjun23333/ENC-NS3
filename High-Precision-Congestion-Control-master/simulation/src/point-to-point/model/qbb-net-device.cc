@@ -262,10 +262,10 @@ namespace ns3 {
         if (!m_linkUp) return; // if link is down, return
         if (m_txMachineState == BUSY) return;    // Quit if channel busy
         Ptr<Packet> p;
-        if (m_node->GetNodeType() == 0){
+        if (m_node->GetNodeType() == 0){ //主机端
             int qIndex = m_rdmaEQ->GetNextQindex(m_paused);//从qpGroup中获取到该条流的索引
-            if (qIndex != -1024){
-                if (qIndex == -1){ // high prio
+            if (qIndex != -1024){ //主机端判断该流是否结束
+                if (qIndex == -1){ // high prio，包括ack
                     p = m_rdmaEQ->DequeueQindex(qIndex);
                     m_traceDequeue(p, 0);
                     TransmitStart(p);
