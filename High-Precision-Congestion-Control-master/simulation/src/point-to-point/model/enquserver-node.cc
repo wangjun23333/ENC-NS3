@@ -52,18 +52,18 @@ TypeId EnquserverNode::GetTypeId (void)
 
 EnquserverNode::EnquserverNode(){
     m_ecmpSeed = m_id;
-    m_node_type = 1;
+    m_node_type = 2;
     m_mmu = CreateObject<SwitchMmu>();
-    for (uint32_t i = 0; i < pCnt; i++)
-        for (uint32_t j = 0; j < pCnt; j++)
-            for (uint32_t k = 0; k < qCnt; k++)
-                m_bytes[i][j][k] = 0;
-    for (uint32_t i = 0; i < pCnt; i++)
-        m_txBytes[i] = 0;
-    for (uint32_t i = 0; i < pCnt; i++)
-        m_lastPktSize[i] = m_lastPktTs[i] = 0;
-    for (uint32_t i = 0; i < pCnt; i++)
-        m_u[i] = 0;
+    // for (uint32_t i = 0; i < pCnt; i++)
+    //     for (uint32_t j = 0; j < pCnt; j++)
+    //         for (uint32_t k = 0; k < qCnt; k++)
+    //             m_bytes[i][j][k] = 0;
+    // for (uint32_t i = 0; i < pCnt; i++)
+    //     m_txBytes[i] = 0;
+    // for (uint32_t i = 0; i < pCnt; i++)
+    //     m_lastPktSize[i] = m_lastPktTs[i] = 0;
+    // for (uint32_t i = 0; i < pCnt; i++)
+    //     m_u[i] = 0;
 }
 
 int EnquserverNode::GetOutDev(Ptr<const Packet>p, MyCustomHeader &ch){

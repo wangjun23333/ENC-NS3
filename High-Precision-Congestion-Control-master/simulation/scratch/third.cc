@@ -37,6 +37,7 @@
 #include <ns3/switch-node.h>
 #include <ns3/sim-setting.h>
 #include <ns3/enquserver-node.h>
+#include <unistd.h> 
 
 using namespace ns3;
 using namespace std;
@@ -366,6 +367,13 @@ int main(int argc, char *argv[])
 {
 	clock_t begint, endt;
 	begint = clock();
+	char cwd[1024];
+	if (getcwd(cwd, sizeof(cwd)) != nullptr) {
+    	std::cout << "Current working directory: " << cwd << std::endl;
+	} else {
+    	perror("getcwd() error");
+}
+
 #ifndef PGO_TRAINING
 	if (argc > 1)
 #else
@@ -384,7 +392,7 @@ int main(int argc, char *argv[])
 			std::string key;
 			conf >> key;
 
-			//std::cout << conf.cur << "\n";
+			std::cout << conf.cur << "\n";
 
 			if (key.compare("ENABLE_QCN") == 0)
 			{

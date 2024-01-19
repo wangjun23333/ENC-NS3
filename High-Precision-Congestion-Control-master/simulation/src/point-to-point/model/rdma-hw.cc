@@ -12,6 +12,7 @@
 #include "ppp-header.h"
 #include "qbb-header.h"
 #include "cn-header.h"
+#include "ns3/sequence-number.h"
 #include "ns3/tcp-header.h"
 
 namespace ns3{
@@ -256,7 +257,7 @@ void RdmaHw::AddQueuePair(uint64_t size, uint16_t pg, Ipv4Address sip, Ipv4Addre
     }else if (m_cc_mode == 10){
         qp->hpccPint.m_curRate = m_bps;
     }else
-        qp.mycc.m_currentWinSize = win;
+        qp->mycc.m_currentWinSize = win;
 
     // Notify Nic
     m_nic[nic_idx].dev->NewQp(qp);
@@ -505,7 +506,7 @@ int RdmaHw::ReceiveAck(Ptr<Packet> p, MyCustomHeader &ch){
 }
 
 int RdmaHw::Receive(Ptr<Packet> p, MyCustomHeader &ch){
-    if (ch.l3Prot == 0x11){ // UDP
+    if (ch.l3Prot == 0x06){ // UDP
         ReceiveTcp(p, ch);
     }else if (ch.l3Prot == 0xFF){ // CNP
         //ReceiveCnp(p, ch);
@@ -623,20 +624,22 @@ Ptr<Packet> RdmaHw::GetNxtPacket(Ptr<RdmaQueuePair> qp){
     Ptr<Packet> p = Create<Packet> (payload_size);
     // add SeqTsHeader
     SeqTsHeader seqTs;
-    seqTs.SetSeq (qp->snd_nxt);
+
+    // seqTs.SetSeq (qp->snd_nxt);
     seqTs.SetPG (qp->m_pg);
-    p->AddHeader (seqTs);
+    p->AddHeader(seqTs);
     // add udp header
     TcpHeader tcpHeader;
     tcpHeader.SetDestinationPort (qp->dport);
     tcpHeader.SetSourcePort (qp->sport);
     tcpHeader.SetFin(fin);//添加fin标志位
+    tcpHeader.SetSequenceNumber(SequenceNumber32((uint32_t)(qp->snd_nxt)));
     p->AddHeader (tcpHeader);
     // add ipv4 header
     Ipv4Header ipHeader;
     ipHeader.SetSource (qp->sip);
     ipHeader.SetDestination (qp->dip);
-    ipHeader.SetProtocol (0x11);
+    ipHeader.SetProtocol (0x06);
     ipHeader.SetPayloadSize (p->GetSize());
     ipHeader.SetTtl (64);
     ipHeader.SetTos (0);

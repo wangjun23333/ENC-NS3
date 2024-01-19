@@ -52,7 +52,7 @@ TypeId EnquserverNode::GetTypeId (void)
 
 EnquserverNode::EnquserverNode(){
     m_ecmpSeed = m_id;
-    m_node_type = 1;
+    m_node_type = 2;
     m_mmu = CreateObject<SwitchMmu>();
     for (uint32_t i = 0; i < pCnt; i++)
         for (uint32_t j = 0; j < pCnt; j++)

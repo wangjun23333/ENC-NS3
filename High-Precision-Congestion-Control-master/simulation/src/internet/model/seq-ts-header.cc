@@ -23,6 +23,7 @@
 #include "ns3/header.h"
 #include "ns3/simulator.h"
 #include "seq-ts-header.h"
+#include "ns3/int-header-niux.h"
 
 NS_LOG_COMPONENT_DEFINE ("SeqTsHeader");
 
@@ -33,8 +34,8 @@ NS_OBJECT_ENSURE_REGISTERED (SeqTsHeader);
 SeqTsHeader::SeqTsHeader ()
   : m_seq (0)
 {
-	if (IntHeader::mode == 1)
-		ih.ts = Simulator::Now().GetTimeStep();
+	// if (IntHeader::mode == 1)
+		// ih.ts = Simulator::Now().GetTimeStep();
 }
 
 void
@@ -62,8 +63,8 @@ SeqTsHeader::GetPG (void) const
 Time
 SeqTsHeader::GetTs (void) const
 {
-	NS_ASSERT_MSG(IntHeader::mode == 1, "SeqTsHeader cannot GetTs when IntHeader::mode != 1");
-	return TimeStep (ih.ts);
+	// NS_ASSERT_MSG(IntHeader::mode == 1, "SeqTsHeader cannot GetTs when IntHeader::mode != 1");
+	// return TimeStep (ih.ts);
 }
 
 TypeId
@@ -93,7 +94,7 @@ SeqTsHeader::GetSerializedSize (void) const
 	return GetHeaderSize();
 }
 uint32_t SeqTsHeader::GetHeaderSize(void){
-	return 6 + IntHeader::GetStaticSize();
+	return 6 + MyIntHeader::GetStaticSize();
 }
 
 void
