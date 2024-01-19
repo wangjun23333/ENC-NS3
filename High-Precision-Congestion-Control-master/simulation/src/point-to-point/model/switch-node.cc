@@ -46,8 +46,10 @@ TypeId SwitchNode::GetTypeId (void)
 }
 
 SwitchNode::SwitchNode() {
-    id = 0;
-    m_node_type = 1;
+
+    //id = 0;
+	m_node_type = 1;
+
     m_mmu = CreateObject<SwitchMmu>();
 	for (uint32_t i = 0; i < pCnt; i++)
 		for (uint32_t j = 0; j < pCnt; j++)
@@ -65,8 +67,10 @@ SwitchNode::SwitchNode() {
 
 SwitchNode::SwitchNode(uint8_t _id){
 	//m_ecmpSeed = m_id;
-	id = _id;
+
+	// id = _id;
     m_node_type = 1;
+
 	m_mmu = CreateObject<SwitchMmu>();
 	for (uint32_t i = 0; i < pCnt; i++)
 		for (uint32_t j = 0; j < pCnt; j++)
@@ -210,6 +214,7 @@ void SwitchNode::SwitchNotifyDequeue(uint32_t ifIndex, uint32_t qIndex, Ptr<Pack
 		MyIntHeader *ih = (MyIntHeader*)&buf[PppHeader::GetStaticSize() + 20 + 20];
 		Ptr<QbbNetDevice> dev = DynamicCast<QbbNetDevice>(m_devices[ifIndex]);
 
+		uint8_t id = m_id;
 		uint32_t ts = m_lastPktTs[ifIndex];
 		int push_rst;
 		uint64_t _max_rate = max_rate[ifIndex]>>23;
