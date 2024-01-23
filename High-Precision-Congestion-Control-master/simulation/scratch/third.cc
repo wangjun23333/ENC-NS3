@@ -109,7 +109,7 @@ struct Interface{
 map<Ptr<Node>, map<Ptr<Node>, Interface> > nbr2if;
 // Mapping destination to next hop for each node: <node, <dest, <nexthop0, ...> > >
 map<Ptr<Node>, map<Ptr<Node>, vector<Ptr<Node> > > > nextHop;
-map<Ptr<Node>, map<Ptr<Node>, Ptr<Node> > > nextHopenc;//每个节点到目的地址的下一跳的节点<node, <dest, nexthop > >
+map<Ptr<Node>, map<Ptr<Node>, Ptr<Node> > > nextHopenc;//每个switch节点到目的地址的下一跳的节点<node, <dest, nexthop > >
 map<Ptr<Node>, map<Ptr<Node>, uint64_t> > pairDelay;
 map<Ptr<Node>, map<Ptr<Node>, uint64_t> > pairTxDelay;
 map<uint32_t, map<uint32_t, uint64_t> > pairBw;
@@ -253,12 +253,12 @@ void CalculateRoute(Ptr<Node> host){
 				txDelay[next] = txDelay[now] + packet_payload_size * 1000000000lu * 8 / it->second.bw;
 				bw[next] = std::min(bw[now], it->second.bw);
 				// we only enqueue switch, because we do not want packets to go through host as middle point
-				if (next->GetNodeType() == 1)
+				if (next->GetNodeType() == 1 || next->GetNodeType()==2)
 					q.push_back(next);
 			}
 			// if 'now' is on the shortest path from 'next' to 'host'.
 			if (d + 1 == dis[next]){
-				nextHopenc[next][host] = now;
+				nextHop[next][host].push_back(now);
 			}
 		}
 	}
@@ -278,31 +278,99 @@ void CalculateRoutes(NodeContainer &n){
 	}
 }
 
-void SetRoutingEntries(){
-	// For each node.
+// void SetRoutingEntries(){
+// 	// For each node.
+// 	for (auto i = nextHop.begin(); i != nextHop.end(); i++){
+// 		Ptr<Node> node = i->first;
+// 		auto &table = i->second;
+// 		for (auto j = table.begin(); j != table.end(); j++){
+// 			// The destination node.
+// 			Ptr<Node> dst = j->first;
+// 			// The IP address of the dst.
+// 			Ipv4Address dstAddr = dst->GetObject<Ipv4>()->GetAddress(1, 0).GetLocal();
+// 			// The next hops towards the dst.
+// 			vector<Ptr<Node> > nexts = j->second;
+// 			for (int k = 0; k < (int)nexts.size(); k++){
+// 				Ptr<Node> next = nexts[k];
+// 				uint32_t interface = nbr2if[node][next].idx;
+// 				if (node->GetNodeType() == 1)
+// 					DynamicCast<SwitchNode>(node)->AddTableEntry(dstAddr, interface);
+// 				else{
+// 					node->GetObject<RdmaDriver>()->m_rdma->AddTableEntry(dstAddr, interface);
+// 				}
+// 			}
+// 		}
+// 	}
+// }
+
+void FormatRoutingEntries(){
 	for (auto i = nextHop.begin(); i != nextHop.end(); i++){
 		Ptr<Node> node = i->first;
 		auto &table = i->second;
-		for (auto j = table.begin(); j != table.end(); j++){
-			// The destination node.
-			Ptr<Node> dst = j->first;
-			// The IP address of the dst.
-			Ipv4Address dstAddr = dst->GetObject<Ipv4>()->GetAddress(1, 0).GetLocal();
-			// The next hops towards the dst.
-			vector<Ptr<Node> > nexts = j->second;
-			for (int k = 0; k < (int)nexts.size(); k++){
-				Ptr<Node> next = nexts[k];
-				uint32_t interface = nbr2if[node][next].idx;
-				if (node->GetNodeType() == 1)
-					DynamicCast<SwitchNode>(node)->AddTableEntry(dstAddr, interface);
-				else{
-					node->GetObject<RdmaDriver>()->m_rdma->AddTableEntry(dstAddr, interface);
+		if (node->GetNodeType()==1){
+			for (auto j = table.begin(); j != table.end(); j++){
+				Ptr<Node> dst = j->first;
+				vector<Ptr<Node> > nexts = j->second;
+				int idx = -1;
+				bool flag = false;
+				for (int k = 0; k < (int)nexts.size(); k++){
+					Ptr<Node> next = nexts[k];
+					if (next->GetNodeType() == 2)
+					{
+						idx = k;
+						bool flag = true;
+					}
 				}
+				if (flag)
+				{
+					nextHopenc[node][dst] = nexts[idx];
+				}else{
+					nextHopenc[node][dst] = nexts.front();
+				}
+			}
+		}else if (node->GetNodeType()==0)
+		{
+			for (auto j = table.begin(); j != table.end(); j++){
+				Ptr<Node> dst = j->first;
+				vector<Ptr<Node> > nexts = j->second;
+				int idx = -1;
+				bool flag = false;
+				for (int k = 0; k < (int)nexts.size(); k++){
+					Ptr<Node> next = nexts[k];
+					if (next->GetNodeType() == 2)
+					{
+						idx = k;
+						bool flag = true;
+					}
+				}
+				if (flag && idx == 0)
+				{
+					nextHopenc[node][dst] = nexts[1];
+
+				}else if (flag && idx == nexts.size()-1)
+				{
+					nextHopenc[node][dst] = nexts[nexts.size()-2];
+
+				}else if (flag && 0<idx<nexts.size()-1)
+				{
+					nextHopenc[node][dst] = nexts.front();
+
+				}else{
+					nextHopenc[node][dst] = nexts.front();
+				}				
+			}
+		}else{
+			for (auto j = table.begin(); j != table.end(); j++){
+				Ptr<Node> dst = j->first;
+				vector<Ptr<Node> > nexts = j->second;
+				nextHopenc[node][dst] = nexts.front();
 			}
 		}
 	}
 }
+
 void SetRoutingEntriesEnc(){
+	FormatRoutingEntries();
 	// For each node.
 	for (auto i = nextHopenc.begin(); i != nextHopenc.end(); i++){
 		Ptr<Node> node = i->first;
@@ -325,6 +393,9 @@ void SetRoutingEntriesEnc(){
 		}
 	}
 }
+
+
+
 
 
 
@@ -803,6 +874,13 @@ int main(int argc, char *argv[])
 		std::string data_rate, link_delay;
 		double error_rate;
 		topof >> src >> dst >> data_rate >> link_delay >> error_rate;
+		std::cout << "src-------------- " << src << std::endl;
+		std::cout << "dst-------------- " << dst << std::endl;
+		std::cout << "data_rate----------- " << data_rate << std::endl;
+		std::cout << "link_delay------------" << link_delay << std::endl;
+		std::cout << "error_rate-------------- " << error_rate << std::endl;
+
+
 
 		Ptr<Node> snode = n.Get(src), dnode = n.Get(dst);
 
@@ -863,7 +941,7 @@ int main(int argc, char *argv[])
 		DynamicCast<QbbNetDevice>(d.Get(1))->TraceConnectWithoutContext("QbbPfc", MakeBoundCallback (&get_pfc, pfc_file, DynamicCast<QbbNetDevice>(d.Get(1))));
 	}
 
-	nic_rate = get_nic_rate(n);
+	nic_rate = get_nic_rate(n); //获得服务器节点网卡的rate
 
 	// config switch
 	for (uint32_t i = 0; i < node_num; i++){

@@ -1,4 +1,4 @@
-# project ns (3.18) configured on Thu Jan 18 22:08:12 2024 by
+# project ns (3.18) configured on Mon Jan 22 22:38:54 2024 by
 # waf 1.7.11 (abi 98, python 20712f0 on linux2)
 # using ./waf configure
 #
@@ -109,7 +109,7 @@ from /home/wj/ENC-ns3/ENC-NS3/High-Precision-Congestion-Control-master/simulatio
     raise Errors.BuildError(self.producer.error)
 BuildError: Build failed
  -> task in 'testprog' failed (exit status 1): 
-	{task 139686882058832: cxx test.cpp -> test.cpp.1.o}
+	{task 139680882279376: cxx test.cpp -> test.cpp.1.o}
 ['/usr/bin/g++', '-O0', '-ggdb', '-g3', '-std=gnu++11', '-flto=auto', '-ffat-lto-objects', '-flto=auto', '-fno-strict-aliasing', '-fwrapv', '-ffile-prefix-map=/build/python2.7-W40Ff2/python2.7-2.7.18=.', '-flto=auto', '-ffat-lto-objects', '-flto=auto', '-ffat-lto-objects', '-fstack-protector-strong', '-DNS3_ASSERT_ENABLE', '-DNS3_LOG_ENABLE', '-DPYTHONDIR="/usr/local/lib/python2.7/dist-packages"', '-DPYTHONARCHDIR="/usr/local/lib/python2.7/dist-packages"', '-DNDEBUG', '-D_FORTIFY_SOURCE=2', '../test.cpp', '-c', '-o', 'test.cpp.1.o']
 
 not found
@@ -141,7 +141,7 @@ from /home/wj/ENC-ns3/ENC-NS3/High-Precision-Congestion-Control-master/simulatio
     raise Errors.BuildError(self.producer.error)
 BuildError: Build failed
  -> task in 'testprog' failed (exit status 1): 
-	{task 139686890515856: cxx test.cpp -> test.cpp.1.o}
+	{task 139680887385424: cxx test.cpp -> test.cpp.1.o}
 ['/usr/bin/g++', '-O0', '-ggdb', '-g3', '-std=gnu++11', '-flto=auto', '-ffat-lto-objects', '-flto=auto', '-fno-strict-aliasing', '-fwrapv', '-ffile-prefix-map=/build/python2.7-W40Ff2/python2.7-2.7.18=.', '-flto=auto', '-ffat-lto-objects', '-flto=auto', '-ffat-lto-objects', '-fstack-protector-strong', '-DNS3_ASSERT_ENABLE', '-DNS3_LOG_ENABLE', '-DPYTHONDIR="/usr/local/lib/python2.7/dist-packages"', '-DPYTHONARCHDIR="/usr/local/lib/python2.7/dist-packages"', '-DNDEBUG', '-D_FORTIFY_SOURCE=2', '../test.cpp', '-c', '-o', 'test.cpp.1.o']
 
 not found
@@ -173,7 +173,7 @@ from /home/wj/ENC-ns3/ENC-NS3/High-Precision-Congestion-Control-master/simulatio
     raise Errors.BuildError(self.producer.error)
 BuildError: Build failed
  -> task in 'testprog' failed (exit status 1): 
-	{task 139686890533584: cxx test.cpp -> test.cpp.1.o}
+	{task 139680882279184: cxx test.cpp -> test.cpp.1.o}
 ['/usr/bin/g++', '-O0', '-ggdb', '-g3', '-std=gnu++11', '-flto=auto', '-ffat-lto-objects', '-flto=auto', '-fno-strict-aliasing', '-fwrapv', '-ffile-prefix-map=/build/python2.7-W40Ff2/python2.7-2.7.18=.', '-flto=auto', '-ffat-lto-objects', '-flto=auto', '-ffat-lto-objects', '-fstack-protector-strong', '-DNS3_ASSERT_ENABLE', '-DNS3_LOG_ENABLE', '-DPYTHONDIR="/usr/local/lib/python2.7/dist-packages"', '-DPYTHONARCHDIR="/usr/local/lib/python2.7/dist-packages"', '-DNDEBUG', '-D_FORTIFY_SOURCE=2', '../test.cpp', '-c', '-o', 'test.cpp.1.o']
 
 not found
@@ -205,7 +205,7 @@ from /home/wj/ENC-ns3/ENC-NS3/High-Precision-Congestion-Control-master/simulatio
     raise Errors.BuildError(self.producer.error)
 BuildError: Build failed
  -> task in 'testprog' failed (exit status 1): 
-	{task 139686890535440: cxx test.cpp -> test.cpp.1.o}
+	{task 139680887427920: cxx test.cpp -> test.cpp.1.o}
 ['/usr/bin/g++', '-O0', '-ggdb', '-g3', '-std=gnu++11', '-flto=auto', '-ffat-lto-objects', '-flto=auto', '-fno-strict-aliasing', '-fwrapv', '-ffile-prefix-map=/build/python2.7-W40Ff2/python2.7-2.7.18=.', '-flto=auto', '-ffat-lto-objects', '-flto=auto', '-ffat-lto-objects', '-fstack-protector-strong', '-DNS3_ASSERT_ENABLE', '-DNS3_LOG_ENABLE', '-DPYTHONDIR="/usr/local/lib/python2.7/dist-packages"', '-DPYTHONARCHDIR="/usr/local/lib/python2.7/dist-packages"', '-DNDEBUG', '-D_FORTIFY_SOURCE=2', '../test.cpp', '-c', '-o', 'test.cpp.1.o']
 
 not found
@@ -237,7 +237,7 @@ from /home/wj/ENC-ns3/ENC-NS3/High-Precision-Congestion-Control-master/simulatio
     raise Errors.BuildError(self.producer.error)
 BuildError: Build failed
  -> task in 'testprog' failed (exit status 1): 
-	{task 139686890573968: cxx test.cpp -> test.cpp.1.o}
+	{task 139680887429648: cxx test.cpp -> test.cpp.1.o}
 ['/usr/bin/g++', '-O0', '-ggdb', '-g3', '-std=gnu++11', '-flto=auto', '-ffat-lto-objects', '-flto=auto', '-fno-strict-aliasing', '-fwrapv', '-ffile-prefix-map=/build/python2.7-W40Ff2/python2.7-2.7.18=.', '-flto=auto', '-ffat-lto-objects', '-flto=auto', '-ffat-lto-objects', '-fstack-protector-strong', '-DNS3_ASSERT_ENABLE', '-DNS3_LOG_ENABLE', '-DPYTHONDIR="/usr/local/lib/python2.7/dist-packages"', '-DPYTHONARCHDIR="/usr/local/lib/python2.7/dist-packages"', '-DNDEBUG', '-D_FORTIFY_SOURCE=2', '../test.cpp', '-c', '-o', 'test.cpp.1.o']
 
 not found
@@ -269,7 +269,7 @@ from /home/wj/ENC-ns3/ENC-NS3/High-Precision-Congestion-Control-master/simulatio
     raise Errors.BuildError(self.producer.error)
 BuildError: Build failed
  -> task in 'testprog' failed (exit status 1): 
-	{task 139686890575568: cxx test.cpp -> test.cpp.1.o}
+	{task 139680887492752: cxx test.cpp -> test.cpp.1.o}
 ['/usr/bin/g++', '-O0', '-ggdb', '-g3', '-std=gnu++11', '-flto=auto', '-ffat-lto-objects', '-flto=auto', '-fno-strict-aliasing', '-fwrapv', '-ffile-prefix-map=/build/python2.7-W40Ff2/python2.7-2.7.18=.', '-flto=auto', '-ffat-lto-objects', '-flto=auto', '-ffat-lto-objects', '-fstack-protector-strong', '-DNS3_ASSERT_ENABLE', '-DNS3_LOG_ENABLE', '-DPYTHONDIR="/usr/local/lib/python2.7/dist-packages"', '-DPYTHONARCHDIR="/usr/local/lib/python2.7/dist-packages"', '-DNDEBUG', '-D_FORTIFY_SOURCE=2', '../test.cpp', '-c', '-o', 'test.cpp.1.o']
 
 not found
@@ -301,7 +301,7 @@ from /home/wj/ENC-ns3/ENC-NS3/High-Precision-Congestion-Control-master/simulatio
     raise Errors.BuildError(self.producer.error)
 BuildError: Build failed
  -> task in 'testprog' failed (exit status 1): 
-	{task 139686890533840: cxx test.cpp -> test.cpp.1.o}
+	{task 139680887494416: cxx test.cpp -> test.cpp.1.o}
 ['/usr/bin/g++', '-O0', '-ggdb', '-g3', '-std=gnu++11', '-flto=auto', '-ffat-lto-objects', '-flto=auto', '-fno-strict-aliasing', '-fwrapv', '-ffile-prefix-map=/build/python2.7-W40Ff2/python2.7-2.7.18=.', '-flto=auto', '-ffat-lto-objects', '-flto=auto', '-ffat-lto-objects', '-fstack-protector-strong', '-DNS3_ASSERT_ENABLE', '-DNS3_LOG_ENABLE', '-DPYTHONDIR="/usr/local/lib/python2.7/dist-packages"', '-DPYTHONARCHDIR="/usr/local/lib/python2.7/dist-packages"', '-DNDEBUG', '-D_FORTIFY_SOURCE=2', '../test.cpp', '-c', '-o', 'test.cpp.1.o']
 
 not found
@@ -333,7 +333,7 @@ from /home/wj/ENC-ns3/ENC-NS3/High-Precision-Congestion-Control-master/simulatio
     raise Errors.BuildError(self.producer.error)
 BuildError: Build failed
  -> task in 'testprog' failed (exit status 1): 
-	{task 139686881787024: cxx test.cpp -> test.cpp.1.o}
+	{task 139680887430160: cxx test.cpp -> test.cpp.1.o}
 ['/usr/bin/g++', '-O0', '-ggdb', '-g3', '-std=gnu++11', '-flto=auto', '-ffat-lto-objects', '-flto=auto', '-fno-strict-aliasing', '-fwrapv', '-ffile-prefix-map=/build/python2.7-W40Ff2/python2.7-2.7.18=.', '-flto=auto', '-ffat-lto-objects', '-flto=auto', '-ffat-lto-objects', '-fstack-protector-strong', '-DNS3_ASSERT_ENABLE', '-DNS3_LOG_ENABLE', '-DPYTHONDIR="/usr/local/lib/python2.7/dist-packages"', '-DPYTHONARCHDIR="/usr/local/lib/python2.7/dist-packages"', '-DNDEBUG', '-D_FORTIFY_SOURCE=2', '../test.cpp', '-c', '-o', 'test.cpp.1.o']
 
 not found
@@ -365,7 +365,7 @@ from /home/wj/ENC-ns3/ENC-NS3/High-Precision-Congestion-Control-master/simulatio
     raise Errors.BuildError(self.producer.error)
 BuildError: Build failed
  -> task in 'testprog' failed (exit status 1): 
-	{task 139686890575504: cxx test.cpp -> test.cpp.1.o}
+	{task 139680887427216: cxx test.cpp -> test.cpp.1.o}
 ['/usr/bin/g++', '-O0', '-ggdb', '-g3', '-std=gnu++11', '-flto=auto', '-ffat-lto-objects', '-flto=auto', '-fno-strict-aliasing', '-fwrapv', '-ffile-prefix-map=/build/python2.7-W40Ff2/python2.7-2.7.18=.', '-flto=auto', '-ffat-lto-objects', '-flto=auto', '-ffat-lto-objects', '-fstack-protector-strong', '-DNS3_ASSERT_ENABLE', '-DNS3_LOG_ENABLE', '-DPYTHONDIR="/usr/local/lib/python2.7/dist-packages"', '-DPYTHONARCHDIR="/usr/local/lib/python2.7/dist-packages"', '-DNDEBUG', '-D_FORTIFY_SOURCE=2', '../test.cpp', '-c', '-o', 'test.cpp.1.o']
 
 not found
@@ -418,7 +418,7 @@ from /home/wj/ENC-ns3/ENC-NS3/High-Precision-Congestion-Control-master/simulatio
     raise Errors.BuildError(self.producer.error)
 BuildError: Build failed
  -> task in 'testprog' failed (exit status 1): 
-	{task 139686890577360: cxx test.cpp -> test.cpp.1.o}
+	{task 139680882257040: cxx test.cpp -> test.cpp.1.o}
 ['/usr/bin/g++', '-O0', '-ggdb', '-g3', '-std=gnu++11', '-flto=auto', '-ffat-lto-objects', '-flto=auto', '-fno-strict-aliasing', '-fwrapv', '-ffile-prefix-map=/build/python2.7-W40Ff2/python2.7-2.7.18=.', '-flto=auto', '-ffat-lto-objects', '-flto=auto', '-ffat-lto-objects', '-fstack-protector-strong', '-fno-strict-aliasing', '-I/usr/include/python2.7', '-I/usr/include/x86_64-linux-gnu/python2.7', '-DNS3_ASSERT_ENABLE', '-DNS3_LOG_ENABLE', '-DPYTHONDIR="/usr/local/lib/python2.7/dist-packages"', '-DPYTHONARCHDIR="/usr/local/lib/python2.7/dist-packages"', '-DNDEBUG', '-D_FORTIFY_SOURCE=2', '../test.cpp', '-c', '-o', 'test.cpp.1.o']
 
 :-(
@@ -478,7 +478,7 @@ from /home/wj/ENC-ns3/ENC-NS3/High-Precision-Congestion-Control-master/simulatio
     raise Errors.BuildError(self.producer.error)
 BuildError: Build failed
  -> task in 'testprog' failed (exit status 1): 
-	{task 139686890650064: cxx test.cpp -> test.cpp.1.o}
+	{task 139680887385104: cxx test.cpp -> test.cpp.1.o}
 ['/usr/bin/g++', '-O0', '-ggdb', '-g3', '-std=gnu++11', '-flto=auto', '-ffat-lto-objects', '-flto=auto', '-fno-strict-aliasing', '-fwrapv', '-ffile-prefix-map=/build/python2.7-W40Ff2/python2.7-2.7.18=.', '-flto=auto', '-ffat-lto-objects', '-flto=auto', '-ffat-lto-objects', '-fstack-protector-strong', '-fno-strict-aliasing', '-fno-strict-aliasing', '-ffile-prefix-map=/build/python2.7-W40Ff2/python2.7-2.7.18=.', '-flto=auto', '-ffat-lto-objects', '-flto=auto', '-ffat-lto-objects', '-fstack-protector-strong', '-fwrapv', '-I/usr/include/python2.7', '-I/usr/include/x86_64-linux-gnu/python2.7', '-DNS3_ASSERT_ENABLE', '-DNS3_LOG_ENABLE', '-DPYTHONDIR="/usr/local/lib/python2.7/dist-packages"', '-DPYTHONARCHDIR="/usr/local/lib/python2.7/dist-packages"', '-DHAVE_PYEMBED=1', '-DNDEBUG', '-D_FORTIFY_SOURCE=2', '-D_FORTIFY_SOURCE=2', '-DNDEBUG', '../test.cpp', '-c', '-o', 'test.cpp.1.o']
 
 Could not build a python embedded interpreter
@@ -567,7 +567,7 @@ from /home/wj/ENC-ns3/ENC-NS3/High-Precision-Congestion-Control-master/simulatio
     raise Errors.BuildError(self.producer.error)
 BuildError: Build failed
  -> task in 'testprog' failed (exit status 1): 
-	{task 139686890717712: cxx test.cpp -> test.cpp.1.o}
+	{task 139680887457616: cxx test.cpp -> test.cpp.1.o}
 ['/usr/bin/g++', '-O0', '-ggdb', '-g3', '-std=gnu++11', '-DNS3_ASSERT_ENABLE', '-DNS3_LOG_ENABLE', '../test.cpp', '-c', '-o', 'test.cpp.1.o']
 
 not found
@@ -657,7 +657,7 @@ from /home/wj/ENC-ns3/ENC-NS3/High-Precision-Congestion-Control-master/simulatio
     raise Errors.BuildError(self.producer.error)
 BuildError: Build failed
  -> task in 'testprog' failed (exit status 1): 
-	{task 139686881833040: cxx test.cpp -> test.cpp.1.o}
+	{task 139680887542864: cxx test.cpp -> test.cpp.1.o}
 ['/usr/bin/g++', '-O0', '-ggdb', '-g3', '-std=gnu++11', '-DNS3_ASSERT_ENABLE', '-DNS3_LOG_ENABLE', '-DHAVE___UINT128_T=1', '-DINT64X64_USE_128=1', '-DHAVE_STDINT_H=1', '-DHAVE_INTTYPES_H=1', '../test.cpp', '-c', '-o', 'test.cpp.1.o']
 
 not found
@@ -834,7 +834,7 @@ from /home/wj/ENC-ns3/ENC-NS3/High-Precision-Congestion-Control-master/simulatio
     raise Errors.BuildError(self.producer.error)
 BuildError: Build failed
  -> task in 'testprog' failed (exit status 1): 
-	{task 139686890726736: cxx test.cpp -> test.cpp.1.o}
+	{task 139680887091600: cxx test.cpp -> test.cpp.1.o}
 ['/usr/bin/g++', '-O0', '-ggdb', '-g3', '-std=gnu++11', '-DNS3_ASSERT_ENABLE', '-DNS3_LOG_ENABLE', '-DHAVE___UINT128_T=1', '-DINT64X64_USE_128=1', '-DHAVE_SYS_TYPES_H=1', '-DHAVE_SYS_STAT_H=1', '-DHAVE_DIRENT_H=1', '-DHAVE_STDLIB_H=1', '-DHAVE_GETENV=1', '-DHAVE_SIGNAL_H=1', '-DHAVE_PTHREAD_H=1', '-DHAVE_STDINT_H=1', '-DHAVE_INTTYPES_H=1', '../test.cpp', '-c', '-o', 'test.cpp.1.o']
 
 not found
