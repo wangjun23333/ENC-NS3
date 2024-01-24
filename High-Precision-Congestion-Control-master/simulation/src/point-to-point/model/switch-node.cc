@@ -47,11 +47,9 @@ TypeId SwitchNode::GetTypeId (void)
 
 SwitchNode::SwitchNode() {
 
-    //id = 0;
 	m_node_type = 1;
-	m_id = 0;
 
-    m_mmu = CreateObject<SwitchMmu>();
+    	m_mmu = CreateObject<SwitchMmu>();
 	for (uint32_t i = 0; i < pCnt; i++)
 		for (uint32_t j = 0; j < pCnt; j++)
 			for (uint32_t k = 0; k < qCnt; k++)
@@ -64,32 +62,6 @@ SwitchNode::SwitchNode() {
 		m_u[i] = 0;
 	for (uint32_t i = 0; i < pCnt; i++)
 		max_rate[i] = 0;
-}
-
-SwitchNode::SwitchNode(uint8_t _id){
-	//m_ecmpSeed = m_id;
-
-	// id = _id;
-    	m_node_type = 1;
-	m_id = _id;
-
-	m_mmu = CreateObject<SwitchMmu>();
-	for (uint32_t i = 0; i < pCnt; i++)
-		for (uint32_t j = 0; j < pCnt; j++)
-			for (uint32_t k = 0; k < qCnt; k++)
-				m_bytes[i][j][k] = 0;
-	for (uint32_t i = 0; i < pCnt; i++)
-		m_txBytes[i] = 0;
-	for (uint32_t i = 0; i < pCnt; i++)
-		m_lastPktSize[i] = m_lastPktTs[i] = 0;
-	for (uint32_t i = 0; i < pCnt; i++)
-		m_u[i] = 0;
-	for (uint32_t i = 0; i < pCnt; i++)
-		max_rate[i] = 0;
-}
-
-void SwitchNode::SetID(uint8_t _id) {
-	m_id = _id;
 }
 
 void SwitchNode::SetMaxRate(uint8_t _port, uint64_t _max_rate) {
