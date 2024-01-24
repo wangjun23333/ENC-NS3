@@ -318,7 +318,7 @@ void FormatRoutingEntries(){
 					if (next->GetNodeType() == 2)
 					{
 						idx = k;
-						bool flag = true;
+						flag = true;
 					}
 				}
 				if (flag)
@@ -340,7 +340,9 @@ void FormatRoutingEntries(){
 					if (next->GetNodeType() == 2)
 					{
 						idx = k;
-						bool flag = true;
+						flag = true;
+
+
 					}
 				}
 				if (flag && idx == 0)
