@@ -438,7 +438,6 @@ namespace ns3 {
         m_traceEnqueue(packet, qIndex);
         m_queue->Enqueue(packet, qIndex);
         DequeueAndTransmit();
-        std::cout << "byebye" << std::endl;
         return true;
     }
 
