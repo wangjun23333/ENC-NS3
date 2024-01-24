@@ -258,6 +258,7 @@ namespace ns3 {
     void
         QbbNetDevice::DequeueAndTransmit(void)
     {
+
         NS_LOG_FUNCTION(this);
         if (!m_linkUp) return; // if link is down, return
         if (m_txMachineState == BUSY) return;    // Quit if channel busy
@@ -432,16 +433,17 @@ namespace ns3 {
         return false;
     }
 
-    bool QbbNetDevice::SwitchSend (uint32_t qIndex, Ptr<Packet> packet, CustomHeader &ch){
+    bool QbbNetDevice::SwitchSend (uint32_t qIndex, Ptr<Packet> packet, MyCustomHeader &ch){
         m_macTxTrace(packet);
         m_traceEnqueue(packet, qIndex);
         m_queue->Enqueue(packet, qIndex);
         DequeueAndTransmit();
+        std::cout << "byebye" << std::endl;
         return true;
     }
 
     void QbbNetDevice::SendPfc(uint32_t qIndex, uint32_t type){
-        Ptr<Packet> p = Create<Packet>(0);
+        /*Ptr<Packet> p = Create<Packet>(0);
         PauseHeader pauseh((type == 0 ? m_pausetime : 0), m_queue->GetNBytes(qIndex), qIndex);
         p->AddHeader(pauseh);
         Ipv4Header ipv4h;  // Prepare IPv4 header
@@ -455,7 +457,7 @@ namespace ns3 {
         AddHeader(p, 0x800);
         CustomHeader ch(CustomHeader::L2_Header | CustomHeader::L3_Header | CustomHeader::L4_Header);
         p->PeekHeader(ch);
-        SwitchSend(0, p, ch);
+        SwitchSend(0, p, ch);*/
     }
 
     bool
