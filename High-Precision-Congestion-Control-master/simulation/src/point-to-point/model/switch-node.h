@@ -25,9 +25,6 @@ class SwitchNode : public Node{
 	uint64_t m_lastPktTs[pCnt]; // ns
 	double m_u[pCnt];
 
-	//uint8_t id;
-	uint64_t max_rate[pCnt];
-
 protected:
 	bool m_ecnEnabled;
 	uint32_t m_ccMode;
@@ -43,6 +40,8 @@ private:
 	void CheckAndSendResume(uint32_t inDev, uint32_t qIndex);
 public:
 	Ptr<SwitchMmu> m_mmu;
+	//uint8_t id;
+	uint64_t max_rate[pCnt];
 
 	static TypeId GetTypeId (void);
 	SwitchNode();
