@@ -47,9 +47,10 @@ TypeId SwitchNode::GetTypeId (void)
 
 SwitchNode::SwitchNode() {
 
+    //id = 0;
 	m_node_type = 1;
 
-    	m_mmu = CreateObject<SwitchMmu>();
+    m_mmu = CreateObject<SwitchMmu>();
 	for (uint32_t i = 0; i < pCnt; i++)
 		for (uint32_t j = 0; j < pCnt; j++)
 			for (uint32_t k = 0; k < qCnt; k++)
@@ -195,11 +196,13 @@ void SwitchNode::SwitchNotifyDequeue(uint32_t ifIndex, uint32_t qIndex, Ptr<Pack
 		uint8_t id = m_id;
 		uint32_t ts = m_lastPktTs[ifIndex];
 		int push_rst;
-		uint64_t _max_rate = max_rate[ifIndex]>>23;
+		uint64_t _max_rate = max_rate[ifIndex]/8/1000000;
 		uint16_t depth = dev->GetQueue()->GetNBytesTotal();
 		push_rst = ih->PushDepth(id, ifIndex, depth, ts, _max_rate);
 
 		if (push_rst < 0) {
+			// uint64_t _ratio = 0;
+			// 乘10000将比值转化为整数值，比方90.12%会变为9012
 			uint64_t _ratio = (dev->GetDataRate().GetBitRate()*10000)/max_rate[ifIndex];
 			push_rst = ih->PushRatio(id, ifIndex, _ratio, ts, _max_rate);
 		}
