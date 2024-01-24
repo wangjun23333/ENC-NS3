@@ -327,6 +327,7 @@ void FormatRoutingEntries(){
 				}else{
 					nextHopenc[node][dst] = nexts.front();
 				}
+				std::cout << node->GetId() << "->" << dst->GetId() << ": " << nextHopenc[node][dst]->GetId() << endl;
 			}
 		}else if (node->GetNodeType()==0)
 		{
@@ -341,8 +342,11 @@ void FormatRoutingEntries(){
 					{
 						idx = k;
 						flag = true;
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> c131dc2fce278fec8bc2526fa41c3ee28199a7bb
 					}
 				}
 				if (flag && idx == 0)
@@ -359,13 +363,15 @@ void FormatRoutingEntries(){
 
 				}else{
 					nextHopenc[node][dst] = nexts.front();
-				}				
+				}
+				std::cout << node->GetId() << "->" << dst->GetId() << ": " << nextHopenc[node][dst]->GetId() << endl;				
 			}
 		}else{
 			for (auto j = table.begin(); j != table.end(); j++){
 				Ptr<Node> dst = j->first;
 				vector<Ptr<Node> > nexts = j->second;
 				nextHopenc[node][dst] = nexts.front();
+				std::cout << node->GetId() << "->" << dst->GetId() << ": " << nextHopenc[node][dst]->GetId() << endl;
 			}
 		}
 	}
@@ -835,6 +841,7 @@ int main(int argc, char *argv[])
 			n.Add(en);
 			en->SetAttribute("EcnEnabled", BooleanValue(enable_qcn));
 		}
+		std::cout << n.Get(i)->GetId() << std::endl;
 	}
 
 
@@ -906,6 +913,8 @@ int main(int argc, char *argv[])
 
 		fflush(stdout);
 
+
+
 		// Assigne server IP
 		// Note: this should be before the automatic assignment below (ipv4.Assign(d)),
 		// because we want our IP to be the primary IP (first in the IP address list),
@@ -931,6 +940,17 @@ int main(int argc, char *argv[])
 		nbr2if[dnode][snode].up = true;
 		nbr2if[dnode][snode].delay = DynamicCast<QbbChannel>(DynamicCast<QbbNetDevice>(d.Get(1))->GetChannel())->GetDelay().GetTimeStep();
 		nbr2if[dnode][snode].bw = DynamicCast<QbbNetDevice>(d.Get(1))->GetDataRate().GetBitRate();
+
+		// niux: set max rate for egress port of switch
+		if (snode->GetNodeType() == 1){ // is switch
+			Ptr<SwitchNode> sw = DynamicCast<SwitchNode>(snode);
+			sw->max_rate[nbr2if[snode][dnode].idx] = nbr2if[snode][dnode].bw;
+		}
+		if (dnode->GetNodeType() == 1) {
+			Ptr<SwitchNode> sw = DynamicCast<SwitchNode>(dnode);
+			sw->max_rate[nbr2if[snode][dnode].idx] = nbr2if[snode][dnode].bw;
+		}
+
 
 		// This is just to set up the connectivity between nodes. The IP addresses are useless
 		char ipstring[16];
