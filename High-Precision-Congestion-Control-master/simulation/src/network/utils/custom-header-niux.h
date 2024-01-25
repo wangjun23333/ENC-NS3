@@ -90,8 +90,10 @@ public:
 		  uint8_t length;             //!< Length (really a uint4_t) in words.
 		  uint8_t tcpFlags;              //!< Flags (really a uint6_t)
 		  uint16_t windowSize;        //!< Window size
+			// checksum skiped
 		  uint16_t urgentPointer;     //!< Urgent pointer
-		  uint8_t optionBuf[32]; // buffer for storing raw options
+			uint32_t ih_seq;
+			uint16_t ih_pg;
 			MyIntHeader ih;
 	  } tcp;
 	  struct {
