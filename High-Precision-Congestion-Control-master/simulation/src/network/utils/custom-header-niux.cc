@@ -86,8 +86,8 @@ uint32_t MyCustomHeader::GetSerializedSize (void) const{
 	if (headerType & L3_Header)
 		len += 5*4;
 	if (headerType & L4_Header){
-		if (l3Prot == 0x6) // TCP
-			len += tcp.length * 4;
+		if (l3Prot == 0x6) // TCP, ignore optional blocks
+			len += 20 + 6 + 36;
 		else if (l3Prot == 0x11) // UDP
 			len += 8;
 	}
@@ -95,7 +95,6 @@ uint32_t MyCustomHeader::GetSerializedSize (void) const{
 }
 void MyCustomHeader::Serialize (Buffer::Iterator start) const{
   Buffer::Iterator i = start;
-  
   // ppp
   if (headerType & L2_Header){
 	  i.WriteHtonU16(pppProto);
@@ -139,10 +138,11 @@ void MyCustomHeader::Serialize (Buffer::Iterator start) const{
 		  i.WriteHtonU16 (0);
 		  i.WriteHtonU16 (tcp.urgentPointer);
 
-		  uint32_t optionLen = (tcp.length - 5) * 4;
+		  /*uint32_t optionLen = (tcp.length - 5) * 4;
 		  if (optionLen <= 32)
-			  i.Write(tcp.optionBuf, optionLen);
+			  i.Write(tcp.optionBuf, optionLen);*/
 			tcp.ih.Serialize(i);
+
 	  } else if (l3Prot == 0x11){ // UDP
 		  // udp header
 		  i.WriteHtonU16 (udp.sport);
@@ -235,9 +235,9 @@ MyCustomHeader::Deserialize (Buffer::Iterator start)
 		  tcp.dport = i.ReadNtohU16 ();
 		  tcp.seq = i.ReadNtohU32 ();
 		  tcp.ack = i.ReadNtohU32 ();
-		  if (brief){
+		  /*if (brief){
 			  tcp.tcpFlags = i.ReadNtohU16() & 0x3f;
-		  }else {
+		  }else {*/
 			  uint16_t field = i.ReadNtohU16 ();
 			  tcp.tcpFlags = field & 0x3F;
 			  tcp.length = field >> 12;
@@ -245,15 +245,18 @@ MyCustomHeader::Deserialize (Buffer::Iterator start)
 			  i.Next (2);
 			  tcp.urgentPointer = i.ReadNtohU16 ();
 
-			  uint32_t optionLen = (tcp.length - 5) * 4;
+			  /*uint32_t optionLen = (tcp.length - 5) * 4;
 			  if (optionLen > 32)
 			  {
 				  NS_LOG_ERROR ("TCP option length " << optionLen << " > 32; options discarded");
 				  return 20;
-			  }
-			  i.Read(tcp.optionBuf, optionLen);
-		  }
+			  }*/
+			  //i.Read(tcp.optionBuf, optionLen);
+		  //}
 		  l4Size = tcp.length * 4;
+
+		tcp.ih_seq = i.ReadNtohU32();
+		tcp.ih_pg = i.ReadNtohU16();
 
 		l4Size += tcp.ih.Deserialize(i);
 
