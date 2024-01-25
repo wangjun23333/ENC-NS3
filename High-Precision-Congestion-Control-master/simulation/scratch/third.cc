@@ -342,11 +342,6 @@ void FormatRoutingEntries(){
 					{
 						idx = k;
 						flag = true;
-<<<<<<< HEAD
-
-
-=======
->>>>>>> c131dc2fce278fec8bc2526fa41c3ee28199a7bb
 					}
 				}
 				if (flag && idx == 0)
