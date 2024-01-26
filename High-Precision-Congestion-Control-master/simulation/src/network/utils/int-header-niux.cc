@@ -4,6 +4,7 @@ namespace ns3 {
 
 MyIntHeader::MyIntHeader() {
 	hinfo.buf = 0;
+	hinfo.totalLength = 9;
 	for (int i = 0; i < idNum; ++i)
 		iinfo[i].buf = 0;
 	for (int i = 0; i < maxNum; ++i) {
@@ -18,7 +19,7 @@ uint32_t MyIntHeader::GetStaticSize() {
 
 void MyIntHeader::PushRoute(uint8_t _id, uint8_t _port) {
 	if (hinfo.nodeNum < idNum)
-		if (rand()%1 == 0)
+		if (rand()%4 == 0)
 			iinfo[hinfo.nodeNum++].Set(_id, _port);
 }
 
@@ -92,6 +93,7 @@ uint32_t MyIntHeader::Deserialize (Buffer::Iterator start){
 		dinfo[j].buf = i.ReadU64();
 	for (int j = 0; j < maxNum; ++j)
 		rinfo[j].buf = i.ReadU64();
+	return sizeof(hinfo)+sizeof(iinfo)+sizeof(dinfo)+sizeof(rinfo);
 }
 
 }
