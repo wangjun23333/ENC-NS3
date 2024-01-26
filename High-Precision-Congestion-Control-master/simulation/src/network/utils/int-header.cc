@@ -1,99 +1,94 @@
-#include "int-header-niux.h"
+#include "int-header.h"
 
 namespace ns3 {
 
-MyIntHeader::MyIntHeader() {
-	hinfo.buf = 0;
-	hinfo.totalLength = 9;
-	for (int i = 0; i < idNum; ++i)
-		iinfo[i].buf = 0;
-	for (int i = 0; i < maxNum; ++i) {
-		dinfo[i].buf = 0;
-		rinfo[i].buf = 0;
-	}
+const uint64_t IntHop::lineRateValues[8] = {25000000000lu,50000000000lu,100000000000lu,200000000000lu,400000000000lu,0,0,0};
+uint32_t IntHop::multi = 1;
+
+IntHeader::Mode IntHeader::mode = NONE;
+int IntHeader::pint_bytes = 2;
+
+IntHeader::IntHeader() : nhop(0) {
+	for (uint32_t i = 0; i < maxHop; i++)
+		hop[i] = {0};
 }
 
-uint32_t MyIntHeader::GetStaticSize() {
-	return sizeof(hinfo)+sizeof(idInfo)+sizeof(dinfo)+sizeof(rinfo);
-}
-
-void MyIntHeader::PushRoute(uint8_t _id, uint8_t _port) {
-	if (hinfo.nodeNum < idNum)
-		if (rand()%4 == 0)
-			iinfo[hinfo.nodeNum++].Set(_id, _port);
-}
-
-int MyIntHeader::PushDepth(uint8_t _id, uint8_t _port, uint16_t _depth, uint32_t _ts, uint8_t _maxRate) {
-	_depth = _depth / qlenUnit;
-	_depth = (_depth < 0xffff)? _depth : 0xffff;
-	
-	if (_depth <= 0) {
-		return -1;
-	}
-	else if (hinfo.depthNum < maxNum) {
-		dinfo[hinfo.depthNum++].Set(_id, _port, _depth, _ts, _maxRate);
-		return 1;
-	}
-	else {
-		uint16_t min_depth = dinfo[0].depth;
-		int min_idx = 0;
-		for (int i = 1; i < maxNum; ++i) {
-			if (dinfo[i].depth < min_depth) {
-				min_depth = dinfo[i].depth;
-				min_idx = i;
-			}
-		}
-		if (_depth > min_depth) {
-			dinfo[min_idx].Set(_id, _port, _depth, _ts, _maxRate);
-			return 1;
-		}
+uint32_t IntHeader::GetStaticSize(){
+	if (mode == NORMAL){
+		return sizeof(hop) + sizeof(nhop);
+	}else if (mode == TS){
+		return sizeof(ts);
+	}else if (mode == PINT){
+		return sizeof(pint);
+	}else {
 		return 0;
 	}
 }
 
-int MyIntHeader::PushRatio(uint8_t _id, uint8_t _port, uint16_t _ratio, uint32_t _ts, uint8_t _maxRate) {
-	if (hinfo.ratioNum < maxNum) {
-		rinfo[hinfo.ratioNum++].Set(_id, _port, _ratio, _ts, _maxRate);
-		return 1;
-	}
-	else {
-		uint16_t min_ratio = rinfo[0].ratio;
-		int min_idx = 0;
-		for (int i = 1; i < maxNum; ++i) {
-			if (rinfo[i].ratio < min_ratio) {
-				min_ratio = rinfo[i].ratio;
-				min_idx = i;
-			}
-		}
-		if (_ratio > min_ratio) {
-			rinfo[min_idx].Set(_id, _port, _ratio, _ts, _maxRate);
-			return 1;
-		}
-		return 0;
+void IntHeader::PushHop(uint64_t time, uint64_t bytes, uint32_t qlen, uint64_t rate){
+	// only do this in INT mode
+	if (mode == NORMAL){
+		uint32_t idx = nhop % maxHop;
+		hop[idx].Set(time, bytes, qlen, rate);
+		nhop++;
 	}
 }
 
-void MyIntHeader::Serialize (Buffer::Iterator start) const{
+void IntHeader::Serialize (Buffer::Iterator start) const{
 	Buffer::Iterator i = start;
-	i.WriteU16(hinfo.buf);
-	for (int j = 0; j < idNum; ++j)
-		i.WriteU16(iinfo[j].buf);
-	for (int j = 0; j < maxNum; ++j)
-		i.WriteU64(dinfo[j].buf);
-	for (int j = 0; j < maxNum; ++j)
-		i.WriteU64(rinfo[j].buf);
+	if (mode == NORMAL){
+		for (uint32_t j = 0; j < maxHop; j++){
+			i.WriteU32(hop[j].buf[0]);
+			i.WriteU32(hop[j].buf[1]);
+		}
+		i.WriteU16(nhop);
+	}else if (mode == TS){
+		i.WriteU64(ts);
+	}else if (mode == PINT){
+		if (pint_bytes == 1)
+			i.WriteU8(pint.power_lo8);
+		else if (pint_bytes == 2)
+			i.WriteU16(pint.power);
+	}
 }
 
-uint32_t MyIntHeader::Deserialize (Buffer::Iterator start){
+uint32_t IntHeader::Deserialize (Buffer::Iterator start){
 	Buffer::Iterator i = start;
-	hinfo.buf = i.ReadU16();
-	for (int j = 0; j < idNum; ++j)
-		iinfo[j].buf = i.ReadU16();
-	for (int j = 0; j < maxNum; ++j)
-		dinfo[j].buf = i.ReadU64();
-	for (int j = 0; j < maxNum; ++j)
-		rinfo[j].buf = i.ReadU64();
-	return sizeof(hinfo)+sizeof(iinfo)+sizeof(dinfo)+sizeof(rinfo);
+	if (mode == NORMAL){
+		for (uint32_t j = 0; j < maxHop; j++){
+			hop[j].buf[0] = i.ReadU32();
+			hop[j].buf[1] = i.ReadU32();
+		}
+		nhop = i.ReadU16();
+	}else if (mode == TS){
+		ts = i.ReadU64();
+	}else if (mode == PINT){
+		if (pint_bytes == 1)
+			pint.power_lo8 = i.ReadU8();
+		else if (pint_bytes == 2)
+			pint.power = i.ReadU16();
+	}
+	return GetStaticSize();
+}
+
+uint64_t IntHeader::GetTs(void){
+	if (mode == TS)
+		return ts;
+	return 0;
+}
+
+uint16_t IntHeader::GetPower(void){
+	if (mode == PINT)
+		return pint_bytes == 1 ? pint.power_lo8 : pint.power;
+	return 0;
+}
+void IntHeader::SetPower(uint16_t power){
+	if (mode == PINT){
+		if (pint_bytes == 1)
+			pint.power_lo8 = power;
+		else
+			pint.power = power;
+	}
 }
 
 }
