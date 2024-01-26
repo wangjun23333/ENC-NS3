@@ -190,7 +190,7 @@ void SwitchNode::SwitchNotifyDequeue(uint32_t ifIndex, uint32_t qIndex, Ptr<Pack
 	
 	uint8_t* buf = p->GetBuffer();
 	if (buf[PppHeader::GetStaticSize() + 9] == 0x06) {
-		MyIntHeader *ih = (MyIntHeader*)&buf[PppHeader::GetStaticSize() + 20 + 20];
+		MyIntHeader *ih = (MyIntHeader*)&buf[PppHeader::GetStaticSize() + 20 + 20 + 6];
 		Ptr<QbbNetDevice> dev = DynamicCast<QbbNetDevice>(m_devices[ifIndex]);
 
 		uint8_t id = m_id;

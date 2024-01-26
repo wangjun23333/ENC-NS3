@@ -158,7 +158,8 @@ void EnquserverNode::GetShareTable(Ptr<const Packet>p, MyCustomHeader &ch){
 //对携带链路信息的数据包中的信息和共享链路表进行查找匹配，返回HeaderLinkInfo结构体类型中的数据
 void EnquserverNode::MatchSharedTableSendToRelatedSender(Ptr<NetDevice> device, Ptr<Packet>p, MyCustomHeader &ch){
     GetShareTable(p, ch);
-    
+    std::cout<< "sharetable" << m_sharedTable[0].rid << "sharetable" << m_sharedTable[0].port <<std::endl;
+    std::cout<< "packet node num\t" << ch.ack.ih.hinfo.nodeNum <<std::endl;
     std::vector<m_sharedTableEntry> matchedEntries;//根据从数据包获取的路由器二元组信息，和共享链路表比配，获取数据包中路由节点二元组对应的所有主机地址四元组
     for (int i = 0; i < ch.ack.ih.hinfo.depthNum; ++i) {
         for (const auto& sharedEntry : m_sharedTable) {

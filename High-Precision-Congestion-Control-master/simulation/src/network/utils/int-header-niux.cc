@@ -18,7 +18,7 @@ uint32_t MyIntHeader::GetStaticSize() {
 
 void MyIntHeader::PushRoute(uint8_t _id, uint8_t _port) {
 	if (hinfo.nodeNum < idNum)
-		if (rand()%4 == 0)
+		if (rand()%1 == 0)
 			iinfo[hinfo.nodeNum++].Set(_id, _port);
 }
 

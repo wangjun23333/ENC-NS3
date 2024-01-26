@@ -91,7 +91,9 @@ public:
 		  uint8_t tcpFlags;              //!< Flags (really a uint6_t)
 		  uint16_t windowSize;        //!< Window size
 		  uint16_t urgentPointer;     //!< Urgent pointer
-		  uint8_t optionBuf[32]; // buffer for storing raw options
+		  uint8_t optionBuf[32];     // buffer for storing raw options
+      uint16_t ih_pg;
+	    uint32_t ih_seq;
 			MyIntHeader ih;
 	  } tcp;
 	  struct {

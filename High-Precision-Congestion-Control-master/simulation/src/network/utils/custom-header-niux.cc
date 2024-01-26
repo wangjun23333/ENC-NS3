@@ -87,7 +87,7 @@ uint32_t MyCustomHeader::GetSerializedSize (void) const{
 		len += 5*4;
 	if (headerType & L4_Header){
 		if (l3Prot == 0x6) // TCP
-			len += tcp.length * 4;
+			len += 20 + 6 + 36;
 		else if (l3Prot == 0x11) // UDP
 			len += 8;
 	}
@@ -235,9 +235,9 @@ MyCustomHeader::Deserialize (Buffer::Iterator start)
 		  tcp.dport = i.ReadNtohU16 ();
 		  tcp.seq = i.ReadNtohU32 ();
 		  tcp.ack = i.ReadNtohU32 ();
-		  if (brief){
+		  /*if (brief){
 			  tcp.tcpFlags = i.ReadNtohU16() & 0x3f;
-		  }else {
+		  }else {*/
 			  uint16_t field = i.ReadNtohU16 ();
 			  tcp.tcpFlags = field & 0x3F;
 			  tcp.length = field >> 12;
@@ -252,7 +252,7 @@ MyCustomHeader::Deserialize (Buffer::Iterator start)
 				  return 20;
 			  }
 			  i.Read(tcp.optionBuf, optionLen);
-		  }
+		  //}
 		  l4Size = tcp.length * 4;
 
 		l4Size += tcp.ih.Deserialize(i);

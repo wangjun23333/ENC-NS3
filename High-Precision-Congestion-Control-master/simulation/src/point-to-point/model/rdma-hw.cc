@@ -220,6 +220,7 @@ uint64_t RdmaHw::GetQpKey(uint32_t dip, uint16_t sport, uint16_t pg){
 }
 Ptr<RdmaQueuePair> RdmaHw::GetQp(uint32_t dip, uint16_t sport, uint16_t pg){
     uint64_t key = GetQpKey(dip, sport, pg);
+
     auto it = m_qpMap.find(key);
     if (it != m_qpMap.end())
         return it->second;
@@ -354,9 +355,10 @@ int RdmaHw::ReceiveUdp(Ptr<Packet> p, MyCustomHeader &ch){
 
 int RdmaHw::ReceiveTcp(Ptr<Packet> p, MyCustomHeader &ch){
     uint8_t ecnbits = ch.GetIpv4EcnBits();
-
+    std::cout<< "node\t" << m_node->GetId() << "tcp packet node num\t" << ch.tcp.ih.hinfo.nodeNum << "seq"<< ch.tcp.seq <<std::endl;
+    
     uint32_t payload_size = p->GetSize() - ch.GetSerializedSize();
-
+    std::cout << "packet_size" << p->GetSize() << "ch_size\t"<< ch.GetSerializedSize() << std::endl;
     // TODO find corresponding rx queue pair
     Ptr<RdmaRxQueuePair> rxQp = GetRxQp(ch.dip, ch.sip, ch.tcp.dport, ch.tcp.sport, 0, true);
     if (ecnbits != 0){
@@ -367,6 +369,7 @@ int RdmaHw::ReceiveTcp(Ptr<Packet> p, MyCustomHeader &ch){
     rxQp->m_milestone_rx = m_ack_interval;
 
     int x = ReceiverCheckSeq(ch.tcp.seq, rxQp, payload_size);
+    // std::cout<< "tcp-seq"<< ch.tcp.seq << std::endl;
     if (x == 1 || x == 2){ //generate ACK or NACK
 //        qbbHeader seqh;
         encHeader encH;
@@ -378,7 +381,7 @@ int RdmaHw::ReceiveTcp(Ptr<Packet> p, MyCustomHeader &ch){
         encH.SetMyIntHeader(ch.tcp.ih);
 //        if (ecnbits)
 //            seqh.SetCnp();
-
+        std::cout<< "node\t" << m_node->GetId()  << "ack-seq"<< rxQp->ReceiverNextExpectedSeq <<std::endl;
         Ptr<Packet> newp = Create<Packet>(std::max(60-14-20-(int)encH.GetSerializedSize(), 0));
         newp->AddHeader(encH); //将ppp头部的上述信息写入到buffer中，方便后续在receive数据包时，ch从buffer中读取
 
@@ -449,6 +452,7 @@ int RdmaHw::ReceiveAck(Ptr<Packet> p, MyCustomHeader &ch){
     uint16_t qIndex = ch.ack.pg;
     uint16_t port = ch.ack.dport;
     uint32_t seq = ch.ack.seq;
+    std::cout<< "PG"<< qIndex << "dport" << port << "seq" << seq << "ch-ack-flag"<< ch.ack.flags << std::endl;
     /*uint8_t cnp = (ch.ack.flags >> qbbHeader::FLAG_CNP) & 1;
     int i;*/
     Ptr<RdmaQueuePair> qp = GetQp(ch.sip, port, qIndex);
