@@ -294,14 +294,14 @@ void EnquserverNode::MatchSharedTableSendToRelatedSender(Ptr<NetDevice> device, 
                     PppHeader ppp;
                     ppp.SetProtocol (0x0021);//IPv4
                     newp->AddHeader (ppp);
-                    MyCustomHeader ch(MyCustomHeader::L2_Header | MyCustomHeader::L3_Header | MyCustomHeader::L4_Header);
-                    p->PeekHeader(ch);
+                    MyCustomHeader newch(MyCustomHeader::L2_Header | MyCustomHeader::L3_Header | MyCustomHeader::L4_Header);
+                    newp->PeekHeader(newch);
             //        AddHeader(newp, 0x800);    // Attach PPP header
                     
         //            MyCustomHeader ch(MyCustomHeader::L2_Header | MyCustomHeader::L3_Header | MyCustomHeader::L4_Header);
         //            ch.getInt = 1; // parse INT header
         //            newp->PeekHeader(ch); //把packet中的相关信息read到ch中
-                    SendToDev(newp, ch);
+                    SendToDev(newp, newch);
         //            uint32_t nic_idx = GetNicIdxOfRxQp(info.fInfo.dip);
         //            m_nic[nic_idx].dev->RdmaEnqueueHighPrioQ(newp);
         //            m_nic[nic_idx].dev->TriggerTransmit();
