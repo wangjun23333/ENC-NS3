@@ -116,160 +116,203 @@ void EnquserverNode::SendToDev(Ptr<Packet>p, MyCustomHeader &ch){
 //生成共享链路表操作
 
 void EnquserverNode::GetShareTable(Ptr<const Packet>p, MyCustomHeader &ch){
-    if (ch.l3Prot == 0x6) {
-        if (ch.tcp.tcpFlags&&0x01 == 1){//接收到fin标识位为1，说明该流结束，此时将该数据包中的{sip,dip,sport,dport}对应的共享链路表中的表项全部删除
+    if (ch.l3Prot == 0xFC || ch.l3Prot == 0xFD) {//获取接收到的ack包中的路由id和port信息，在共享链路表对应的表项中查找，若没有，则直接添加
+        bool finFlag = (ch.ack.flags&0x2 == 2); // 用于判断流是否完成
+        if (finFlag) {
             for (m_sharedTableEntry& p : m_sharedTable) {
-                /*p.flowInfos.erase(std::remove_if(p.flowInfos.begin(), p.flowInfos.end(),
-                                                [](const flowInfo& f) {
-                                                    return f.sip == ch.dip && f.dip == ch.sip&& f.dport == ch.tcp.sport&& f.sport == ch.tcp.dport;
-                                                }),
-                                  p.flowInfos.end());*/
-                    for (auto f = p.flowInfos.begin(); f != p.flowInfos.end(); ) {
-                        if (f->sip == ch.dip && f->dip == ch.sip&& f->dport == ch.tcp.sport&& f->sport == ch.tcp.dport) {
-                            p.flowInfos.erase(f);
-                        }
-                        else {
-                            ++f;
-                        }
+            /*p.flowInfos.erase(std::remove_if(p.flowInfos.begin(), p.flowInfos.end(),
+                                            [](const flowInfo& f) {
+                                                return f.sip == ch.dip && f.dip == ch.sip&& f.dport == ch.tcp.sport&& f.sport == ch.tcp.dport;
+                                            }),
+                                p.flowInfos.end());*/
+                for (auto f = p.flowInfos.begin(); f != p.flowInfos.end(); ) {
+                    if (f->sip == ch.dip && f->dip == ch.sip&& f->dport == ch.tcp.sport&& f->sport == ch.tcp.dport) {
+                        p.flowInfos.erase(f);
+                    }
+                    else {
+                        ++f;
                     }
                 }
+            }
+        }
+        else if (ch.ack.ih.hinfo.nodeNum ==1) {
+            bool found = false;
+            for (m_sharedTableEntry& p : m_sharedTable) {
+                if (p.rid == ch.ack.ih.iinfo[0].id && p.port == ch.ack.ih.iinfo[0].port) {
+                    found = true;
+                    bool flowFound = false;
+                    for (flowInfo& info : p.flowInfos)
+                    {
+                        if (info.sip==ch.dip && info.dip==ch.sip && info.sport==ch.tcp.dport && info.dport==ch.tcp.sport)
+                        {
+                            flowFound = true;
+                            break;
+                        }
+                    }
+                    if (!flowFound)
+                    {
+                        p.flowInfos.push_back({ch.dip,ch.sip,ch.tcp.dport,ch.tcp.sport});//将该数据包的四元组信息添加到对应的表项中
+                        break; // 如果找到了，跳出循环
+                    }
+
+                }
+            }
+            // 如果没找到，添加到向量中
+            if (!found) {
+                std::vector<flowInfo> info;
+                info.push_back({ch.dip,ch.sip,ch.tcp.dport,ch.tcp.sport}); //将四元组信息添加到Info中
+                m_sharedTable.push_back({ch.ack.ih.iinfo[0].id, ch.ack.ih.iinfo[0].port,info});
+            }
         }
     }
-    else if (ch.l3Prot == 0xFC || ch.l3Prot == 0xFD) {//获取接收到的ack包中的路由id和port信息，在共享链路表对应的表项中查找，若没有，则直接添加
-        bool found = false;
-           for (m_sharedTableEntry& p : m_sharedTable) {
-               if (p.rid == ch.ack.ih.iinfo[0].id && p.port == ch.ack.ih.iinfo[0].port) {
-                   found = true;
-                   p.flowInfos.push_back({ch.dip,ch.sip,ch.tcp.dport,ch.tcp.sport});//将该数据包的四元组信息添加到对应的表项中
-                   break; // 如果找到了，跳出循环
-               }
-           }
-
-           // 如果没找到，添加到向量中
-           if (!found) {
-               std::vector<flowInfo> info;
-               info.push_back({ch.dip,ch.sip,ch.tcp.dport,ch.tcp.sport}); //将四元组信息添加到Info中
-               m_sharedTable.push_back({ch.ack.ih.iinfo[0].id, ch.ack.ih.iinfo[0].port,info});
-           }
-    }
+    
 }
 
 
 //对携带链路信息的数据包中的信息和共享链路表进行查找匹配，返回HeaderLinkInfo结构体类型中的数据
 void EnquserverNode::MatchSharedTableSendToRelatedSender(Ptr<NetDevice> device, Ptr<Packet>p, MyCustomHeader &ch){
     GetShareTable(p, ch);
-    std::cout<< "sharetable" << m_sharedTable[0].rid << "sharetable" << m_sharedTable[0].port <<std::endl;
-    std::cout<< "packet node num\t" << ch.ack.ih.hinfo.nodeNum <<std::endl;
-    std::vector<m_sharedTableEntry> matchedEntries;//根据从数据包获取的路由器二元组信息，和共享链路表比配，获取数据包中路由节点二元组对应的所有主机地址四元组
-    for (int i = 0; i < ch.ack.ih.hinfo.depthNum; ++i) {
-        for (const auto& sharedEntry : m_sharedTable) {
-            if (ch.ack.ih.dinfo[i].iinfo.id == sharedEntry.rid && ch.ack.ih.dinfo[i].iinfo.port == sharedEntry.port) {
-                matchedEntries.push_back(sharedEntry);
-            }
-        }
-    }
-    for (int i = 0; i < ch.ack.ih.hinfo.ratioNum; ++i) {
-        for (const auto& sharedEntry : m_sharedTable) {
-            if (ch.ack.ih.rinfo[i].iinfo.id == sharedEntry.rid && ch.ack.ih.rinfo[i].iinfo.port == sharedEntry.port) {
-                matchedEntries.push_back(sharedEntry);
-            }
-        }
-    }
-    
-    std::vector<relatedSenderHeaderInfo> relatedSenderHeaderInfos;
-    for (const auto& sharedEntry : matchedEntries) {
-        for (const auto& flow : sharedEntry.flowInfos) {
-            relatedSenderHeaderInfo relatedInfo;
+    std::cout << "node:" << m_id<< " sip:" << ch.sip << "  dip:"<< ch.dip << std::endl;
+    // std::cout << "packet of RID: " << ch.ack.ih.iinfo[0].id << ", Port: " << ch.ack.ih.iinfo[0].port << std::endl;
+    //  for (const auto& entry : m_sharedTable) {
+    //     std::cout << "RID: " << entry.rid << ", Port: " << entry.port << std::endl;
+    //     std::cout << "size of Flow Infos:" << entry.flowInfos.size() <<std::endl;
+    //     for (const auto& flow : entry.flowInfos) {
+    //         std::cout << "  SIP: " << flow.sip
+    //                   << ", DIP: " << flow.dip
+    //                   << ", Sport: " << flow.sport
+    //                   << ", Dport: " << flow.dport << std::endl;
+    //     }
+    //     std::cout << std::endl; // 在每个 m_sharedTableEntry 之后添加一个空行以增加可读性
+    // }
+    if (ch.ack.ih.hinfo.depthNum !=0 || ch.ack.ih.hinfo.ratioNum!=0 ){
+        // std::cout<<"depthNum size:"<<ch.ack.ih.hinfo.depthNum<<std::endl;
+        // std::cout<<"ratioNum size:"<<ch.ack.ih.hinfo.ratioNum<<std::endl;
+        std::vector<m_sharedTableEntry> matchedEntries;//根据从数据包获取的路由器二元组信息，和共享链路表比配，获取数据包中路由节点二元组对应的所有主机地址四元组
+        for (int i = 0; i < ch.ack.ih.hinfo.depthNum; ++i) {
+            for (const auto& sharedEntry : m_sharedTable) {
+                // std::cout<<"depth routerID:"<<ch.ack.ih.dinfo[i].iinfo.id<<std::endl;
+                // std::cout<<"sharedTable routerID:"<<sharedEntry.rid<<std::endl;
+                // std::cout<<"depth routerPORT:"<<ch.ack.ih.dinfo[i].iinfo.port<<std::endl;
+                // std::cout<<"sharedTable routerPORT:"<<sharedEntry.port<<std::endl;
+                if (ch.ack.ih.dinfo[i].iinfo.id == sharedEntry.rid && ch.ack.ih.dinfo[i].iinfo.port == sharedEntry.port) {
+                    matchedEntries.push_back(sharedEntry);
 
-            // 设置 fInfo
-            relatedInfo.fInfo = flow;
-
-            // 查找是否已经存在对应的 rIdAndPort
-            auto it = std::find_if(
-                relatedSenderHeaderInfos.begin(),
-                relatedSenderHeaderInfos.end(),
-                [flow](const relatedSenderHeaderInfo& info) {
-                    return info.fInfo == flow;
                 }
-            );
-
-            // 如果存在，直接添加 rIdAndPort，否则添加新的记录
-            if (it != relatedSenderHeaderInfos.end()) {
-                
-                it->rIdAndPort.push_back({sharedEntry.rid, sharedEntry.port});
-            } else {
-                relatedInfo.rIdAndPort.push_back({sharedEntry.rid, sharedEntry.port});
-                relatedSenderHeaderInfos.push_back(relatedInfo);
             }
         }
-    }
-    for (const auto& info : relatedSenderHeaderInfos) { //需要加判断，如果sip。。。。==原数据包中的sip。。。。，则直接转发
-        if (info.fInfo.sip == ch.dip && info.fInfo.dip == ch.sip && info.fInfo.sport == ch.ack.dport && info.fInfo.dport == ch.ack.sport) {
-            // 这里这个转发没有看懂是啥意思，就暂时没改ch，用给的ch去转发
-            // SendToDev(p, info.fInfo.sip); //直接转发
-            SendToDev(p, ch);
-        }else{
-            encHeader encH;
-    //        seqh.SetSeq(rxQp->ReceiverNextExpectedSeq);
-            encH.SetFlags(1);
-    //        seqh.SetPG(ch.udp.pg);
-            encH.SetSport(info.fInfo.dport);
-            encH.SetDport(info.fInfo.sport);
-            
-            MyIntHeader ih;
-            for (const auto& pair : info.rIdAndPort) {
-                bool isFind = 0;
-                for (int i = 0; i < ch.ack.ih.hinfo.depthNum; ++i){
-                    if (pair.first == ch.ack.ih.dinfo[i].iinfo.id && pair.second == ch.ack.ih.dinfo[i].iinfo.port) {
-                        ih.PushDepth(ch.ack.ih.dinfo[i].iinfo.id,ch.ack.ih.dinfo[i].iinfo.port,ch.ack.ih.dinfo[i].depth,ch.ack.ih.dinfo[i].ts,ch.ack.ih.dinfo[i].maxRate);
-                        isFind = 1;
-                        break;
+        for (int i = 0; i < ch.ack.ih.hinfo.ratioNum; ++i) {
+            for (const auto& sharedEntry : m_sharedTable) {
+                if (ch.ack.ih.rinfo[i].iinfo.id == sharedEntry.rid && ch.ack.ih.rinfo[i].iinfo.port == sharedEntry.port) {
+                    matchedEntries.push_back(sharedEntry);
+                }
+            }
+        }
+        // std::cout<<"matchedEntries size:"<<matchedEntries.size()<<std::endl;
+        std::vector<relatedSenderHeaderInfo> relatedSenderHeaderInfos;
+        for (const auto& sharedEntry : matchedEntries) {
+            for (const auto& flow : sharedEntry.flowInfos) {
+                relatedSenderHeaderInfo relatedInfo;
+
+                // 设置 fInfo
+                relatedInfo.fInfo = flow;
+
+                // 查找是否已经存在对应的 rIdAndPort
+                auto it = std::find_if(
+                    relatedSenderHeaderInfos.begin(),
+                    relatedSenderHeaderInfos.end(),
+                    [flow](const relatedSenderHeaderInfo& info) {
+                        return info.fInfo == flow;
                     }
-                }
-                if (isFind == 1) {
-                    break;
-                }
-                for (int i = 0; i < ch.ack.ih.hinfo.ratioNum; ++i){
-                    if (pair.first == ch.ack.ih.rinfo[i].iinfo.id && pair.second == ch.ack.ih.rinfo[i].iinfo.port) {
-                        ih.PushDepth(ch.ack.ih.rinfo[i].iinfo.id,ch.ack.ih.rinfo[i].iinfo.port,ch.ack.ih.rinfo[i].ratio,ch.ack.ih.rinfo[i].ts,ch.ack.ih.rinfo[i].maxRate);
-                        break;
-                    }
+                );
+
+                // 如果存在，直接添加 rIdAndPort，否则添加新的记录
+                if (it != relatedSenderHeaderInfos.end()) {
+                    
+                    it->rIdAndPort.push_back({sharedEntry.rid, sharedEntry.port});
+                } else {
+                    relatedInfo.rIdAndPort.push_back({sharedEntry.rid, sharedEntry.port});
+                    relatedSenderHeaderInfos.push_back(relatedInfo);
                 }
             }
-            encH.SetMyIntHeader(ih);
-    //        if (ecnbits)
-    //            seqh.SetCnp();
-
-            Ptr<Packet> newp = Create<Packet>(0);
-            newp->AddHeader(encH); //将ppp头部的上述信息写入到buffer中，方便后续在receive数据包时，ch从buffer中读取
-
-            Ipv4Header head;    // Prepare IPv4 header
-            head.SetDestination(Ipv4Address(info.fInfo.sip));
-            head.SetSource(Ipv4Address(info.fInfo.dip));
-            head.SetProtocol(0xFC); //ack=0xFC nack=0xFD
-            head.SetTtl(64);
-            head.SetPayloadSize(newp->GetSize());
-    //        head.SetIdentification(rxQp->m_ipid++);
-
-            newp->AddHeader(head);
-            PppHeader ppp;
-            ppp.SetProtocol (0x0021);//IPv4
-            newp->AddHeader (ppp);
-            MyCustomHeader ch(MyCustomHeader::L2_Header | MyCustomHeader::L3_Header | MyCustomHeader::L4_Header);
-            p->PeekHeader(ch);
-    //        AddHeader(newp, 0x800);    // Attach PPP header
-            
-//            MyCustomHeader ch(MyCustomHeader::L2_Header | MyCustomHeader::L3_Header | MyCustomHeader::L4_Header);
-//            ch.getInt = 1; // parse INT header
-//            newp->PeekHeader(ch); //把packet中的相关信息read到ch中
-            SendToDev(newp, ch);
-//            uint32_t nic_idx = GetNicIdxOfRxQp(info.fInfo.dip);
-//            m_nic[nic_idx].dev->RdmaEnqueueHighPrioQ(newp);
-//            m_nic[nic_idx].dev->TriggerTransmit();
         }
+        // std::cout<<"relatedSenderHeaderInfos size:"<<relatedSenderHeaderInfos.size()<<std::endl;
+        if (relatedSenderHeaderInfos.size() !=0){
+            /* code */
         
-    }
+        
+            for (const auto& info : relatedSenderHeaderInfos) { //需要加判断，如果sip。。。。==原数据包中的sip。。。。，则直接转发
+                std::cout<<"matchedEntries size:*******************************"<<std::endl;
+                if (info.fInfo.sip == ch.dip && info.fInfo.dip == ch.sip && info.fInfo.sport == ch.ack.dport && info.fInfo.dport == ch.ack.sport) {
+                    // 这里这个转发没有看懂是啥意思，就暂时没改ch，用给的ch去转发
+                    // SendToDev(p, info.fInfo.sip); //直接转发
+                    SendToDev(p, ch);
+                }else{
+                    encHeader encH;
+            //        seqh.SetSeq(rxQp->ReceiverNextExpectedSeq);
+                    encH.SetFlags(1);
+            //        seqh.SetPG(ch.udp.pg);
+                    encH.SetSport(info.fInfo.dport);
+                    encH.SetDport(info.fInfo.sport);
+                    
+                    MyIntHeader ih;
+                    for (const auto& pair : info.rIdAndPort) {
+                        bool isFind = 0;
+                        for (int i = 0; i < ch.ack.ih.hinfo.depthNum; ++i){
+                            if (pair.first == ch.ack.ih.dinfo[i].iinfo.id && pair.second == ch.ack.ih.dinfo[i].iinfo.port) {
+                                ih.PushDepth(ch.ack.ih.dinfo[i].iinfo.id,ch.ack.ih.dinfo[i].iinfo.port,ch.ack.ih.dinfo[i].depth,ch.ack.ih.dinfo[i].ts,ch.ack.ih.dinfo[i].maxRate);
+                                isFind = 1;
+                                break;
+                            }
+                        }
+                        if (isFind == 1) {
+                            break;
+                        }
+                        for (int i = 0; i < ch.ack.ih.hinfo.ratioNum; ++i){
+                            if (pair.first == ch.ack.ih.rinfo[i].iinfo.id && pair.second == ch.ack.ih.rinfo[i].iinfo.port) {
+                                ih.PushDepth(ch.ack.ih.rinfo[i].iinfo.id,ch.ack.ih.rinfo[i].iinfo.port,ch.ack.ih.rinfo[i].ratio,ch.ack.ih.rinfo[i].ts,ch.ack.ih.rinfo[i].maxRate);
+                                break;
+                            }
+                        }
+                    }
+                    encH.SetMyIntHeader(ih);
+            //        if (ecnbits)
+            //            seqh.SetCnp();
 
+                    Ptr<Packet> newp = Create<Packet>(0);
+                    newp->AddHeader(encH); //将ppp头部的上述信息写入到buffer中，方便后续在receive数据包时，ch从buffer中读取
+
+                    Ipv4Header head;    // Prepare IPv4 header
+                    head.SetDestination(Ipv4Address(info.fInfo.sip));
+                    head.SetSource(Ipv4Address(info.fInfo.dip));
+                    head.SetProtocol(0xFC); //ack=0xFC nack=0xFD
+                    head.SetTtl(64);
+                    head.SetPayloadSize(newp->GetSize());
+            //        head.SetIdentification(rxQp->m_ipid++);
+
+                    newp->AddHeader(head);
+                    PppHeader ppp;
+                    ppp.SetProtocol (0x0021);//IPv4
+                    newp->AddHeader (ppp);
+                    MyCustomHeader ch(MyCustomHeader::L2_Header | MyCustomHeader::L3_Header | MyCustomHeader::L4_Header);
+                    p->PeekHeader(ch);
+            //        AddHeader(newp, 0x800);    // Attach PPP header
+                    
+        //            MyCustomHeader ch(MyCustomHeader::L2_Header | MyCustomHeader::L3_Header | MyCustomHeader::L4_Header);
+        //            ch.getInt = 1; // parse INT header
+        //            newp->PeekHeader(ch); //把packet中的相关信息read到ch中
+                    SendToDev(newp, ch);
+        //            uint32_t nic_idx = GetNicIdxOfRxQp(info.fInfo.dip);
+        //            m_nic[nic_idx].dev->RdmaEnqueueHighPrioQ(newp);
+        //            m_nic[nic_idx].dev->TriggerTransmit();
+                }
+            }
+        }else{
+            SendToDev(p, ch);
+        }
+    }else{
+        SendToDev(p, ch);
+    }
 
 }
 //uint32_t EnquserverNode::GetNicIdxOfRxQp(uint32_t dip){
